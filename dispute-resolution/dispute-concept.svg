@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520">
+      <defs>
+        <style>
+          .d1-title { font-family: system-ui, sans-serif; font-size: 22px; font-weight: 700; fill: #1a1c22; }
+          .d1-sub { font-family: system-ui, sans-serif; font-size: 13px; fill: #6b7080; }
+          .d1-col-head { font-family: system-ui, sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; }
+          .d1-label { font-family: system-ui, sans-serif; font-size: 13px; font-weight: 500; fill: #52565f; }
+          .d1-value { font-family: ui-monospace, 'SF Mono', monospace; font-size: 14px; font-weight: 500; }
+          .d1-field { font-family: ui-monospace, monospace; font-size: 11px; fill: #6b7080; }
+          .d1-badge { font-family: system-ui, sans-serif; font-size: 11px; font-weight: 600; fill: #ffffff; }
+          .d1-note { font-family: system-ui, sans-serif; font-size: 12px; fill: #6b7080; }
+          .d1-sig { font-family: system-ui, sans-serif; font-size: 11px; fill: #9b988f; font-style: italic; }
+        </style>
+      </defs>
+
+      <rect width="1000" height="520" rx="12" fill="#ffffff" stroke="#e8e6e1" stroke-width="1"/>
+
+      <!-- Title -->
+      <text x="500" y="44" class="d1-title" text-anchor="middle">What was authorized vs. what happened</text>
+      <text x="500" y="64" class="d1-sub" text-anchor="middle">The agent exceeded its grant. The dispute evidence proves the mismatch mechanically.</text>
+
+      <!-- ── LEFT COLUMN: AUTHORIZED (GRANT) ── -->
+      <rect x="60" y="100" width="380" height="280" rx="8" fill="#f0faf9" stroke="#0b9b8e" stroke-width="1.5"/>
+      <rect x="60" y="100" width="380" height="36" rx="8" fill="#0b9b8e"/>
+      <rect x="60" y="120" width="380" height="16" fill="#0b9b8e"/>
+      <text x="250" y="124" class="d1-col-head" fill="#ffffff" text-anchor="middle">AUTHORIZED</text>
+      <text x="250" y="158" class="d1-sig" text-anchor="middle">from the grant+jwt signed by the owner</text>
+
+      <text x="88" y="194" class="d1-label">Max amount</text>
+      <text x="400" y="194" class="d1-value" fill="#0b6b62" text-anchor="end">10,000</text>
+      <text x="400" y="210" class="d1-field" text-anchor="end">USDC (6 decimals)</text>
+      <line x1="88" y1="222" x2="400" y2="222" stroke="#d4ece9" stroke-width="1"/>
+
+      <text x="88" y="248" class="d1-label">Recipient</text>
+      <text x="400" y="248" class="d1-value" fill="#0b6b62" text-anchor="end">merchant.com</text>
+      <text x="400" y="264" class="d1-field" text-anchor="end">did:web:merchant.com</text>
+      <line x1="88" y1="276" x2="400" y2="276" stroke="#d4ece9" stroke-width="1"/>
+
+      <text x="88" y="302" class="d1-label">Scope</text>
+      <text x="400" y="302" class="d1-value" fill="#0b6b62" text-anchor="end">payment</text>
+      <line x1="88" y1="314" x2="400" y2="314" stroke="#d4ece9" stroke-width="1"/>
+
+      <text x="88" y="340" class="d1-label">Expires</text>
+      <text x="400" y="340" class="d1-value" fill="#0b6b62" text-anchor="end">15 min</text>
+      <text x="400" y="356" class="d1-field" text-anchor="end">grant was live at payment time</text>
+
+      <!-- ── RIGHT COLUMN: ACTUAL (RECEIPT) ── -->
+      <rect x="560" y="100" width="380" height="280" rx="8" fill="#fdf5f4" stroke="#c43c2e" stroke-width="1.5"/>
+      <rect x="560" y="100" width="380" height="36" rx="8" fill="#c43c2e"/>
+      <rect x="560" y="120" width="380" height="16" fill="#c43c2e"/>
+      <text x="750" y="124" class="d1-col-head" fill="#ffffff" text-anchor="middle">ACTUAL</text>
+      <text x="750" y="158" class="d1-sig" text-anchor="middle">from the receipt+jwt signed by the receipt service</text>
+
+      <text x="588" y="194" class="d1-label">Amount paid</text>
+      <text x="900" y="194" class="d1-value" fill="#a62c1e" text-anchor="end">45,000</text>
+      <text x="900" y="210" class="d1-field" text-anchor="end">USDC (6 decimals)</text>
+      <line x1="588" y1="222" x2="900" y2="222" stroke="#f0d5d2" stroke-width="1"/>
+
+      <text x="588" y="248" class="d1-label">Paid to</text>
+      <text x="900" y="248" class="d1-value" fill="#a62c1e" text-anchor="end">merchant.com</text>
+      <text x="900" y="264" class="d1-field" text-anchor="end">did:web:merchant.com</text>
+      <line x1="588" y1="276" x2="900" y2="276" stroke="#f0d5d2" stroke-width="1"/>
+
+      <text x="588" y="302" class="d1-label">Agent</text>
+      <text x="900" y="302" class="d1-value" fill="#a62c1e" text-anchor="end">acme.com:shopper</text>
+      <line x1="588" y1="314" x2="900" y2="314" stroke="#f0d5d2" stroke-width="1"/>
+
+      <text x="588" y="340" class="d1-label">Paid at</text>
+      <text x="900" y="340" class="d1-value" fill="#a62c1e" text-anchor="end">within window</text>
+      <text x="900" y="356" class="d1-field" text-anchor="end">receipt.iat &lt; grant.exp</text>
+
+      <!-- ── CENTER: THE MISMATCH ── -->
+      <!-- Arrow from authorized to actual, crossing the gap -->
+      <line x1="440" y1="194" x2="560" y2="194" stroke="#c43c2e" stroke-width="2" stroke-dasharray="0"/>
+
+      <!-- Delta badge in the center -->
+      <rect x="452" y="178" width="96" height="32" rx="16" fill="#c43c2e"/>
+      <text x="500" y="199" class="d1-badge" text-anchor="middle">4.5× over</text>
+
+      <!-- Check marks for matching rows -->
+      <text x="500" y="252" text-anchor="middle" style="font-size:16px; fill:#2d8c3c;">✓</text>
+      <text x="500" y="306" text-anchor="middle" style="font-size:16px; fill:#2d8c3c;">✓</text>
+      <text x="500" y="344" text-anchor="middle" style="font-size:16px; fill:#2d8c3c;">✓</text>
+
+      <!-- ── BOTTOM: RESULT ── -->
+      <rect x="60" y="410" width="880" height="80" rx="8" fill="#fdf5e0" stroke="#b8940f" stroke-width="1.5"/>
+
+      <text x="100" y="440" style="font-family: system-ui, sans-serif; font-size: 14px; font-weight: 600; fill: #8b6914;">dispute+jwt</text>
+      <text x="100" y="460" class="d1-note">Reason: <tspan style="font-family: ui-monospace, monospace; font-weight: 500;">scope-exceeded</tspan></text>
+      <text x="100" y="477" class="d1-note">Delta: constraints.maxAmount — authorized "10000", actual "45000"</text>
+
+      <text x="900" y="440" class="d1-sig" text-anchor="end">signed by the owner (grant issuer)</text>
+      <text x="900" y="458" class="d1-sig" text-anchor="end">embeds both artifacts in full</text>
+      <text x="900" y="476" class="d1-sig" text-anchor="end">a resolver verifies mechanically, no callbacks</text>
+    </svg>

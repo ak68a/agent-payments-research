@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 440" width="1100" height="440">
+      <defs>
+        <style>
+          .d2-title { font-family: system-ui, sans-serif; font-size: 20px; font-weight: 700; fill: #1a1c22; }
+          .d2-sub { font-family: system-ui, sans-serif; font-size: 13px; fill: #6b7080; }
+          .d2-box-head { font-family: system-ui, sans-serif; font-size: 14px; font-weight: 700; }
+          .d2-box-mono { font-family: ui-monospace, monospace; font-size: 10.5px; fill: #52565f; }
+          .d2-box-desc { font-family: system-ui, sans-serif; font-size: 11px; fill: #6b7080; }
+          .d2-arrow-label { font-family: ui-monospace, monospace; font-size: 10px; fill: #6b7080; }
+          .d2-arrow-desc { font-family: system-ui, sans-serif; font-size: 10px; fill: #9b988f; font-style: italic; }
+          .d2-note { font-family: system-ui, sans-serif; font-size: 12px; fill: #6b7080; }
+        </style>
+        <marker id="d2-arrow" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="7" markerHeight="5" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 4 L 0 8 z" fill="#3d4150"/>
+        </marker>
+        <marker id="d2-arrow-teal" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="7" markerHeight="5" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 4 L 0 8 z" fill="#0b6b62"/>
+        </marker>
+      </defs>
+
+      <rect width="1100" height="440" rx="12" fill="#ffffff" stroke="#e8e6e1" stroke-width="1"/>
+
+      <!-- Title -->
+      <text x="48" y="40" class="d2-title">Evidence trail</text>
+      <text x="48" y="60" class="d2-sub">A resolver walks the chain right to left. Every binding is cryptographic; no callbacks needed.</text>
+
+      <!-- ── RECEIPT ── -->
+      <rect x="48" y="100" width="190" height="130" rx="8" fill="#e8f0e8" stroke="#2d8c3c" stroke-width="2"/>
+      <text x="72" y="126" class="d2-box-head" fill="#1a6b27">Receipt</text>
+      <text x="72" y="146" class="d2-box-mono">amount: "45000"</text>
+      <text x="72" y="162" class="d2-box-mono">currency: "USDC"</text>
+      <text x="72" y="178" class="d2-box-mono">ack.agent →</text>
+      <text x="72" y="194" class="d2-box-mono">ack.grant →</text>
+      <text x="72" y="214" class="d2-box-desc">signed by receipt service</text>
+
+      <!-- Arrow: Receipt → Agent -->
+      <line x1="238" y1="150" x2="308" y2="150" stroke="#3d4150" stroke-width="1.5" marker-end="url(#d2-arrow)"/>
+      <text x="255" y="140" class="d2-arrow-label">ack.agent</text>
+
+      <!-- ── AGENT ── -->
+      <rect x="312" y="100" width="170" height="130" rx="8" fill="#eef4ff" stroke="#4a7fd4" stroke-width="2"/>
+      <text x="336" y="126" class="d2-box-head" fill="#2a5caa">Agent</text>
+      <text x="336" y="146" class="d2-box-mono">did:web:acme.com</text>
+      <text x="336" y="162" class="d2-box-mono">  :shopper</text>
+      <text x="336" y="182" class="d2-box-desc">holds request-signing key</text>
+      <text x="336" y="198" class="d2-box-desc">presented the grant</text>
+      <text x="336" y="214" class="d2-box-desc">named in grant.sub</text>
+
+      <!-- Arrow: Receipt → Grant (the SHA-256 binding) -->
+      <path d="M 143 230 L 143 280 L 586 280 L 586 232" stroke="#0b6b62" stroke-width="1.5" marker-end="url(#d2-arrow-teal)" fill="none"/>
+      <rect x="280" y="268" width="230" height="22" rx="4" fill="#ffffff"/>
+      <text x="290" y="284" class="d2-arrow-label" style="fill:#0b6b62;">ack.grant = SHA-256(grant)</text>
+      <text x="290" y="296" class="d2-arrow-desc">content binding — a forged grant won't match</text>
+
+      <!-- Arrow: Agent ← Grant (sub binding) -->
+      <line x1="482" y1="165" x2="546" y2="165" stroke="#3d4150" stroke-width="1.5" marker-start="url(#d2-arrow)"/>
+      <text x="493" y="155" class="d2-arrow-label">grant.sub</text>
+
+      <!-- ── GRANT ── -->
+      <rect x="550" y="100" width="190" height="130" rx="8" fill="#e8f6f5" stroke="#0b9b8e" stroke-width="2"/>
+      <text x="574" y="126" class="d2-box-head" fill="#0b6b62">Grant</text>
+      <text x="574" y="146" class="d2-box-mono">scope: "payment"</text>
+      <text x="574" y="162" class="d2-box-mono">maxAmount: "10000"</text>
+      <text x="574" y="178" class="d2-box-mono">aud: merchant.com</text>
+      <text x="574" y="194" class="d2-box-mono">exp · cnf.jkt</text>
+      <text x="574" y="214" class="d2-box-desc">signed by owner (iss)</text>
+
+      <!-- Arrow: Grant → Owner -->
+      <line x1="740" y1="150" x2="810" y2="150" stroke="#3d4150" stroke-width="1.5" marker-end="url(#d2-arrow)"/>
+      <text x="758" y="140" class="d2-arrow-label">grant.iss</text>
+
+      <!-- ── OWNER ── -->
+      <rect x="814" y="100" width="240" height="130" rx="8" fill="#f4f0fa" stroke="#7c5bbf" stroke-width="2"/>
+      <text x="838" y="126" class="d2-box-head" fill="#5b3d99">Owner (disputant)</text>
+      <text x="838" y="146" class="d2-box-mono">did:web:acme.com</text>
+      <text x="838" y="166" class="d2-box-desc">holds the grant-signing key</text>
+      <text x="838" y="182" class="d2-box-desc">signs the dispute evidence</text>
+      <text x="838" y="202" class="d2-box-desc">→ legal entity via</text>
+      <text x="838" y="218" class="d2-box-desc">   ext-controller (DNS / code host)</text>
+
+      <!-- ── DISPUTE EVIDENCE (wrapping) ── -->
+      <rect x="28" y="330" width="1044" height="80" rx="8" fill="#fdf5e0" stroke="#b8940f" stroke-width="1.5"/>
+      <text x="52" y="358" class="d2-box-head" fill="#8b6914">dispute+jwt</text>
+      <text x="52" y="376" class="d2-box-desc">Embeds the grant and receipt in full. The delta extracts one field from each and proves they don't match.</text>
+      <text x="52" y="394" class="d2-box-desc">Signed by the owner. Verified with Steps 1–5 from Section 6 of the spec.</text>
+
+      <!-- Dashed lines from dispute up to grant and receipt -->
+      <path d="M 143 330 L 143 234" stroke="#b8940f" stroke-width="1" stroke-dasharray="5 3"/>
+      <path d="M 645 330 L 645 234" stroke="#b8940f" stroke-width="1" stroke-dasharray="5 3"/>
+
+      <!-- Labels on dashed lines -->
+      <text x="152" y="324" class="d2-arrow-desc" style="fill: #b8940f;">evidence.receipt</text>
+      <text x="654" y="324" class="d2-arrow-desc" style="fill: #b8940f;">evidence.grant</text>
+
+      <!-- Signature line from dispute to owner -->
+      <path d="M 934 330 L 934 234" stroke="#b8940f" stroke-width="1" stroke-dasharray="5 3"/>
+      <text x="943" y="324" class="d2-arrow-desc" style="fill: #b8940f;">signed by iss</text>
+    </svg>
