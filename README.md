@@ -8,7 +8,7 @@ Each directory is a self-contained proposal with its own README, spec document, 
 
 | Proposal | Status | Depends on | ACK issue |
 |---|---|---|---|
-| [dispute-resolution](dispute-resolution/) | Draft | v2 grants (PR #179) | TBD |
+| [dispute-resolution](dispute-resolution/) | Draft | v2 grants (PR #179) | [#217](https://github.com/agentcommercekit/ack/issues/217) |
 
 ## Process
 
