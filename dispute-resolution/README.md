@@ -1,6 +1,6 @@
 **Status: proposal draft.**
 
-# Dispute resolution for agent commerce
+# Dispute resolution for agent payments
 
 ## Motivation
 
@@ -9,91 +9,114 @@ existing chargeback reason code covers it. The payment was
 authenticated, authorized, and completed — no fraud occurred. But the
 agent acted outside the scope the user granted.
 
-ACK-Pay v2 introduces grants (short-lived JWTs carrying authorization
-scope) and binds each receipt to its authorizing grant via an artifact
-reference. This gives us both legs of the evidence: what was authorized
-and what happened. What's missing is a machine-readable format for the
-mismatch between them — and a verification path that a third party can
+This is not a single-protocol problem. Every machine payment protocol
+being built right now — ACK, MPP, x402 — handles the forward flow
+and stops at the receipt. None of them answer "what happens when the
+agent was wrong?"
+
+The gap is structural: the artifacts that prove a payment happened
+don't carry enough information to prove it shouldn't have. What's
+missing is a machine-readable format for the mismatch between
+authorization and action, and a verification path a third party can
 walk without callbacks to either side.
 
 <img alt="dispute-concept" src="dispute-concept.svg" />
 
+## The evidence triple
+
+The core concept is protocol-agnostic. A dispute evidence artifact
+binds three things:
+
+1. **Authorization scope** — what the user authorized the agent to do
+2. **Action** — what the agent actually did (the payment receipt)
+3. **Delta** — a structured, machine-readable description of which
+   constraints were violated and by how much
+
+A resolver verifies the evidence mechanically: extract the named field
+from each embedded artifact and confirm the values differ. No
+natural-language interpretation. No callbacks. No external state.
+
+Each protocol maps this triple to its own primitives. See
+[protocol-mappings.md](protocol-mappings.md) for MPP and x402.
+The reference implementation below uses ACK's grant/receipt model.
+
 ## Design guidelines
 
 1. **Layer, don't fork.** Dispute evidence is an extension artifact
-   that layers on ACK-Pay core's receipt binding and ACK-ID core's
-   grant model. No changes to core artifacts.
+   that layers on each protocol's existing artifacts. No changes to
+   core protocol flows.
 
 2. **Evidence, not verdicts.** The protocol generates verifiable
    evidence of a mismatch. Whether that evidence warrants a refund is
    a business decision above the protocol.
 
 3. **Mechanical verification.** A resolver can verify every claim in
-   the evidence by extracting fields from the embedded grant and
-   receipt and comparing values. No natural-language interpretation
-   required.
+   the evidence by extracting fields from the embedded artifacts and
+   comparing values. No natural-language interpretation required.
 
-4. **Same verification infrastructure.** Dispute evidence is a signed
-   JWT verified with the same key resolution and signature
-   verification that core uses. No new cryptographic primitives.
+4. **Same verification infrastructure.** Dispute evidence uses the
+   same signature and key resolution primitives each protocol already
+   defines. No new cryptographic mechanisms.
 
-5. **Fail closed on missing evidence.** If the grant or receipt is
-   missing, tampered, or doesn't match its artifact reference, the
-   entire dispute is rejected. There is no partial-evidence path.
+5. **Fail closed on missing evidence.** If either artifact is missing,
+   tampered, or doesn't match its reference, the entire dispute is
+   rejected. There is no partial-evidence path.
 
 ## Document map
 
 | Section | Location |
 |---|---|
-| Evidence trail, artifact, reason codes, verification checklist | [ext-disputes.md](ext-disputes.md) |
+| Reference spec (ACK implementation) | [ext-disputes.md](ext-disputes.md) |
+| Protocol mappings (MPP, x402) | [protocol-mappings.md](protocol-mappings.md) |
 | Working example (jose) | [example.ts](example.ts) |
+
+## Cross-protocol issues
+
+| Protocol | Issue | Status |
+|---|---|---|
+| ACK | [agentcommercekit/ack#217](https://github.com/agentcommercekit/ack/issues/217) | Open |
+| MPP | [tempoxyz/mpp-specs#359](https://github.com/tempoxyz/mpp-specs/issues/359) | Open |
+| x402 | [x402-foundation/x402#3500](https://github.com/x402-foundation/x402/issues/3500) | Open |
 
 ## Settled decisions
 
-1. **Dispute evidence is a JWT, not a VC.** Consistent with v2's
+1. **Dispute evidence is a JWT, not a VC.** Consistent with ACK v2's
    move from Verifiable Credentials to plain JOSE. A lossless
    VC mapping can live in ext-attestations if needed.
 
-2. **The disputant signs.** The disputant (grant issuer) is the only
-   party with standing to claim a mismatch. The agent can't dispute
-   its own authorization, and the merchant has no visibility into the
-   grant's constraints.
+2. **The disputant signs.** The disputant (grant issuer / principal)
+   is the only party with standing to claim a mismatch.
 
-3. **Grants are referenced by content hash.** The `ack.grant`
-   artifact reference (SHA-256, base64url) is already defined in
-   ACK-Pay core Section 4. Dispute evidence reuses it — no new
-   binding mechanism.
+3. **Artifacts are referenced by content hash.** The evidence embeds
+   both artifacts in full and binds them by SHA-256. A forged artifact
+   won't match the reference.
 
 4. **Deltas are structured, not narrative.** Each delta entry names
    a field, an authorized value, and an actual value. A resolver
    verifies mechanically. This trades expressiveness for
-   verifiability — a disputant who can't express their complaint
-   as a field mismatch needs a human arbitration layer.
+   verifiability.
 
 5. **Reason codes are extensible.** Unrecognized codes don't cause
-   rejection. The delta is self-describing, so a resolver can verify
-   the mismatch even with an unknown reason label. The cost: a
-   reason code alone is never sufficient evidence; the delta must
-   always be present and verifiable.
+   rejection. The delta is self-describing.
 
 6. **Only mechanically verifiable mismatches.** Category mismatch and
-   "no grant" were deliberately excluded from the reason code
-   registry — neither can be verified by comparing grant fields to
-   receipt fields. The cost: some real disputes can't be expressed
-   as machine-readable evidence and need human arbitration.
+   "no grant" were deliberately excluded — neither can be verified
+   by comparing fields in the embedded artifacts.
 
 7. **Evidence expires.** 90-day SHOULD, matching common chargeback
-   windows. The cost: legitimate disputes filed after 90 days are
-   unverifiable by compliant resolvers.
+   windows.
 
-## Dependencies
+## Dependencies (ACK reference implementation)
 
-This proposal depends on:
+The ACK spec depends on:
 
 - **ACK-ID core** — grants, artifact references, key resolution
 - **ACK-Pay core** — receipt `ack` binding, payment request embedding
 
 Both are proposed in [RFC: ACK-ID + ACK-Pay v2](https://github.com/agentcommercekit/ack/pull/179).
+
+MPP and x402 have their own dependency paths — see
+[protocol-mappings.md](protocol-mappings.md).
 
 ## Open questions for reviewers
 
@@ -104,3 +127,6 @@ Both are proposed in [RFC: ACK-ID + ACK-Pay v2](https://github.com/agentcommerce
   do autonomous agents need a shorter/longer window?
 - Should the protocol define counter-evidence, or leave response
   mechanisms entirely to the resolution layer?
+- For protocols without an authorization-scope artifact (MPP, x402):
+  should the dispute extension introduce one, or reference an external
+  format?
