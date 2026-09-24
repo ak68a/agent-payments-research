@@ -230,17 +230,27 @@ mechanical-tier code MUST NOT carry it.
 |---|---|---|
 | `attestation.source` | REQUIRED | The attester's identity (an HTTPS URL or DID), in the same form as the dispute's `iss`. |
 | `attestation.type` | REQUIRED | A label identifying the attestation's evidentiary method. Extensible like `reason` (Section 5.2) — a resolver that does not recognize the value still evaluates the delta on its merits. |
-| `attestation.observation_window` | REQUIRED | Object with `start` and `end` (NumericDate, RFC 7519 §2). The period over which the attester made the observation the delta relies on. |
-| `attestation.as_of` | REQUIRED | NumericDate. When the attestation artifact was produced. MUST NOT precede `observation_window.end`. |
+| `attestation.observation_window` | OPTIONAL | Object with `start` and `end` (NumericDate, RFC 7519 §2), if present. If present, MUST NOT be wider than the period the attester actually observed. |
+| `attestation.as_of` | OPTIONAL | NumericDate, if present. If both `as_of` and `observation_window` are present, `as_of` MUST NOT precede `observation_window.end`. |
 | `attestation.artifact` | REQUIRED | Object with `uri` and `hash` (Section 5.6). A reference to the attestation artifact itself. |
 
-`observation_window` and `as_of` are REQUIRED on every attested code,
-not optional metadata. A claim like "this counterparty differs from
-what this endpoint had been settling to" is only evidence relative to
-a stated period. An attester with a day of history and an attester
-with a year of history both produce a syntactically valid attestation;
-without the window, a resolver cannot tell which one it is looking at,
-or how stale the claim already was when the dispute was filed.
+`observation_window` and `as_of` are OPTIONAL. A claim like "this
+counterparty differs from what this endpoint had been settling to" is
+only strong evidence relative to a stated period — an attester with a
+day of history and one with a year both produce a syntactically valid
+attestation — but how wide a window is *enough* is a policy question,
+not a schema question. Requiring the field would force every resolver
+to also decide a minimum acceptable width to accept it, turning
+resolvers into policy evaluators rather than field extractors. This
+extension does not take that position: an attester MAY include
+`observation_window` and `as_of`; if `observation_window` is present,
+it MUST NOT be wider than the period the attester actually observed,
+so a resolver that does inspect it is not misled about the claim's
+basis. A resolver MAY apply its own minimum-window threshold before
+weighing an attestation; a resolver that does not apply one MUST
+still be able to evaluate the attestation at face value — the fields'
+presence is additional evidence for a resolver that wants it, not a
+gate on the attestation's validity.
 
 ### 5.5 Attested reason codes
 
@@ -270,6 +280,21 @@ first put into JSON Canonicalization Form (RFC 8785, JCS), and the
 digest is taken over that canonical byte string. `attestation.artifact.uri`
 locates the artifact; a resolver that dereferences it MUST canonicalize
 the result the same way before comparing it against `hash`.
+
+JCS canonicalizes numbers using ECMAScript's number-to-string
+conversion, which is IEEE 754 double-precision and loses precision on
+integers outside the safely representable range — exactly the
+failure mode `delta` entries already avoid by carrying amounts as
+strings (Section 4, `constraints.maxAmount`). Every amount in the
+canonical attestation set MUST be serialized as a string, not a JSON
+number, so that two independent implementations of the same
+attestation produce identical hashes. The same rule applies to any
+other value in the canonical set where two producers could disagree
+on serialization.
+
+The canonical field set for attestation artifacts, and how an absent
+optional field is represented under JCS, are specified as a separate
+proposal.
 
 ```
 -- evidence.attestation (non-normative) --
@@ -372,9 +397,11 @@ on.
 
 1. Verify `evidence.attestation` is present. Its absence on an
    attested-tier code MUST cause rejection.
-2. Verify `attestation.observation_window.start` does not follow
-   `attestation.observation_window.end`, and that `attestation.as_of`
-   does not precede `attestation.observation_window.end`.
+2. If `attestation.observation_window` is present, verify `start`
+   does not follow `end`. If both `attestation.observation_window`
+   and `attestation.as_of` are present, verify `as_of` does not
+   precede `observation_window.end`. Neither field is required to be
+   present, and their absence MUST NOT cause rejection.
 3. If the resolver dereferences `attestation.artifact.uri`, verify the
    canonical form of the result against `attestation.artifact.hash`
    (Section 5.6). A resolver that does not dereference the artifact
