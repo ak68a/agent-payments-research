@@ -130,3 +130,20 @@ MPP and x402 have their own dependency paths — see
 - For protocols without an authorization-scope artifact (MPP, x402):
   should the dispute extension introduce one, or reference an external
   format?
+- **Attestation quality fields.** Should `observation_window` and
+  `as_of` be REQUIRED or RECOMMENDED on tier 2 attestations? Required
+  means every attestor must declare coverage and every resolver must
+  evaluate it. Recommended keeps attestation quality as optional
+  signal. Current position: RECOMMENDED, to avoid pushing policy
+  decisions into the schema. (Raised by unblinkr, x402#3500.)
+- **Canonicalization.** JCS (RFC 8785) for hashing canonical input
+  sets. The open decision is which fields go in the canonical set and
+  how absent fields are treated (omitted vs null vs empty). Amounts
+  must be strings, not numbers, to avoid IEEE 754 precision loss.
+  (Raised by unblinkr, x402#3500.)
+- **Decision record liability.** The decision record (leg 3)
+  strengthens disputes by proving the agent should have known. But it
+  also creates a self-incrimination risk: if the record shows PASS
+  when it should have been BLOCK, that's evidence against the agent.
+  Agents are incentivized to not produce decision records. Should the
+  spec address this tension, or leave it to the market?

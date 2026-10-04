@@ -158,14 +158,43 @@ resolver MUST reject the entire artifact.
 
 ## 5. Reason code registry
 
-| Code | When to use | Required delta fields |
-|---|---|---|
-| `scope-exceeded` | The action violated a mechanically verifiable grant constraint — amount, recipient, or any constraint whose value appears in both the grant and the receipt's embedded payment request. | `field` referencing the constraint, `authorized`, `actual`. |
-| `grant-expired` | The grant's `exp` had passed at the time the receipt was issued. | `field` = `exp`, `authorized` = grant `exp`, `actual` = receipt `iat`. |
-| `audience-mismatch` | The payment went to a counterparty not named in the grant's `aud`. | `field` = `aud`, `authorized` = grant `aud`, `actual` = receipt recipient. |
-| `unauthorized-agent` | The receipt's `ack.agent` names an agent the disputant did not grant. The disputant MUST embed a valid grant they did issue (to prove they are the owner) and the receipt that names the wrong agent. | `field` = `sub`, `authorized` = grant `sub`, `actual` = receipt `ack.agent`. |
+### 5.1 Verification tiers
 
-### 5.1 Codes intentionally omitted
+Each reason code carries an integer `tier` that declares what a
+resolver needs to evaluate it. Tiers are hierarchical — each is a
+strict superset of the capability below it:
+
+| Tier | Label | Model | What the resolver needs |
+|---|---|---|---|
+| 1 | Mechanical | Extract fields from embedded artifacts, compare values | Grant + receipt only |
+| 2 | Attested | Embedded third-party attestation alongside artifacts | Grant + receipt + attestor's signed artifact (see §5.6) |
+| 3 | Aggregate | Multiple receipts + completeness attestation | Grant + N receipts + completeness claim |
+
+A resolver declares the highest tier it supports. Codes at or below
+that tier are evaluated. Codes above are **skipped** — not rejected.
+The dispute remains valid for whatever the resolver can evaluate.
+
+Tier values are integers in the wire format (`"tier": 1`), not
+strings. If tier labels change in documentation, the wire format
+is unaffected.
+
+All three tiers share one property: verification can be completed
+from the embedded artifacts alone, with no live queries. This is the
+hard design boundary. Failure modes that require querying live
+external state (blockchain, revocation registries, live endpoints)
+or subjective human judgment are outside the evidence layer's scope
+(see Section 5.4).
+
+### 5.2 Code table
+
+| Code | Tier | When to use | Required delta fields |
+|---|---|---|---|
+| `scope-exceeded` | 1 | The action violated a mechanically verifiable grant constraint — amount, recipient, or any constraint whose value appears in both the grant and the receipt's embedded payment request. | `field` referencing the constraint, `authorized`, `actual`. |
+| `grant-expired` | 1 | The grant's `exp` had passed at the time the receipt was issued. | `field` = `exp`, `authorized` = grant `exp`, `actual` = receipt `iat`. |
+| `audience-mismatch` | 1 | The payment went to a counterparty not named in the grant's `aud`. | `field` = `aud`, `authorized` = grant `aud`, `actual` = receipt recipient. |
+| `unauthorized-agent` | 1 | The receipt's `ack.agent` names an agent the disputant did not grant. The disputant MUST embed a valid grant they did issue (to prove they are the owner) and the receipt that names the wrong agent. | `field` = `sub`, `authorized` = grant `sub`, `actual` = receipt `ack.agent`. |
+
+### 5.3 Codes intentionally omitted
 
 **Category mismatch.** An earlier draft included `category-mismatch`
 for purchases outside the grant's `constraints.category`. This was
@@ -193,7 +222,93 @@ receipt alone, not a structured mismatch between two artifacts. This
 case is better handled by the resolution layer directly inspecting
 the receipt.
 
-### 5.2 Extensibility
+### 5.4 Failure classes outside the evidence layer
+
+The following failure classes are real but outside the scope of this
+extension. They are documented here to make the boundary explicit and
+to prevent scope creep.
+
+**Delivery mismatch** (paid for X, received Y). The agent paid for
+"premium market data." Receipt confirms delivery. The server delivered
+basic data. Every payment artifact agrees — the mismatch is between
+what was promised and what was actually delivered. This cannot be
+mechanically verified because delivery evidence is unstructured (an
+API response body, a file, a service result) and comparing it to an
+offer description requires judgment. If offer formats evolve to carry
+structured delivery commitments (schemas, expected fields, response
+codes), a mechanical comparison becomes possible and this class could
+re-enter scope as a tier 1 or tier 2 code.
+
+**Intent mismatch** (agent bought within scope, user didn't want it).
+The grant says "up to $100 on any API." The agent bought a $50
+social media API. Every constraint was satisfied. But the user meant
+"only weather APIs." The grant encoded the wrong constraints. The
+evidence layer cannot second-guess signed artifacts — the grant is
+the canonical expression of the principal's authorization. This is a
+grant-authoring problem and is unlikely to ever be expressible as a
+mechanical mismatch.
+
+**Settlement integrity** (receipt claims settlement, chain disagrees).
+The facilitator or receipt issuer attests that settlement succeeded.
+The on-chain state disagrees. This requires querying the blockchain or
+embedding a chain-state proof (e.g. a Merkle proof of the transaction
+state). If embedded as a proof, this could be a tier 2 code. If it
+requires a live query, it falls outside the "no callbacks" boundary.
+This class may enter scope once chain-proof formats stabilize.
+
+**Delegation scope violation** (multi-hop grant chain widens
+authority). Principal authorizes Agent A at $100. Agent A delegates
+to Agent B at $500. Agent B pays $200. The verification is mechanical
+if the full chain is embedded (walk each link, confirm constraints
+narrow monotonically), but chain completeness has the same problem
+as aggregate disputes. This class is deferred until any protocol
+implements multi-hop delegation.
+
+### 5.5 Attestation schema (tier 2+)
+
+Tier 2 and tier 3 reason codes carry an `attestation` object
+identifying the third party whose signed artifact supports the claim.
+
+| Field | Requiredness | Rule |
+|---|---|---|
+| `source` | REQUIRED | The attestor's identity (DID or HTTPS URL). |
+| `type` | REQUIRED | The kind of attestation (e.g. `settlement-history`, `grant-usage-log`). |
+| `ref` | REQUIRED | Content reference to the attestor's signed artifact (SHA-256, base64url). |
+| `observation_window` | RECOMMENDED | The period the attestor observed: `{start, end}` as ISO 8601 timestamps. |
+| `as_of` | RECOMMENDED | When the attestation was produced, as an ISO 8601 timestamp. |
+
+An attester MAY omit `observation_window` and `as_of`. If present,
+`observation_window` MUST NOT be wider than the period the attester
+actually observed, and `as_of` MUST NOT be later than the time the
+attestation was produced. Inflating either value is a false statement
+inside a signed artifact, not a judgment call — it makes the
+attestation itself dishonest, independent of whether the underlying
+claim is correct.
+
+These fields provide useful signal for resolvers that want to apply a
+minimum-coverage policy, but they are self-reported metadata, not
+cryptographic assurance. Making them required would push policy
+decisions (what window length is "enough") into the schema.
+
+A resolver that receives an attestation without `observation_window`
+MAY still evaluate it at reduced confidence. A resolver MUST NOT
+reject an otherwise valid dispute solely because these fields are
+absent.
+
+### 5.6 Canonicalization
+
+When a reason code or decision record requires a content hash over a
+set of input fields, the canonical serialization SHOULD follow JCS
+(RFC 8785). Amounts and other large integers MUST be encoded as
+strings, not numbers, to avoid IEEE 754 precision loss in JCS number
+serialization.
+
+The canonical field set (which fields are included, their ordering,
+and how absent fields are treated) is specific to each reason code
+and is an open decision. See the open questions in the dispute
+resolution README.
+
+### 5.7 Extensibility
 
 The registry is extensible. An unrecognized reason code MUST NOT cause
 a resolver to reject the evidence — the delta entries are
@@ -334,3 +449,13 @@ are independent.
    the merchant to respond? A `counter-dispute+jwt` could carry the
    merchant's evidence that the grant was satisfied. This draft
    leaves response mechanisms to the resolution layer.
+
+4. **Decision record liability.** A decision record (leg 3)
+   strengthens disputes by proving the agent evaluated its constraints
+   against the proposed action. But if the record shows PASS when the
+   inputs deterministically resolve to BLOCK, that is evidence against
+   the agent. Agents are therefore incentivized to not produce
+   decision records. Should the spec mandate them (stronger disputes
+   but self-incrimination risk), make them optional (current approach,
+   but agents that skip them face weaker disputes), or define a
+   safe-harbor for agents that produce them in good faith?
