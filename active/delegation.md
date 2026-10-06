@@ -235,6 +235,20 @@ Per-payment verification is offline (check signature, check amount). Aggregate v
 
 The grant carries an optional `budgetRef` pointing to a budget authority by URI. Facilitators that understand it check aggregate limits via the budget authority. Facilitators that don't still verify per-payment constraints. Additive, same pattern as the tiered reason codes in #3500.
 
+**What a `budgetRef` authority MUST do.** The concurrent-spend race is real and well-documented. Three agent products with client-side aggregate caps had the same bug: check remaining budget, await transfer, record spend. Two concurrent payments both pass because the check and the decrement aren't atomic (desplega-ai/agent-swarm#1885, elizaOS/eliza#33937, Bitterbot-AI/bitterbot-desktop#157). A `budgetRef` that only answers "how much is left?" moves the same race to the facilitator. Requirements (from #3693 discussion, domondi1):
+
+1. **Reserve, don't read.** The facilitator's `/verify` call holds the amount against the budget atomically and returns a reservation ID. Two verifies can't both take the last unit. This matches the BAP atomic authorize pattern (line 41).
+
+2. **Settle or release, keyed to the payment.** Settlement consumes the reservation (by `authorization.nonce` for `exact` scheme). A failed or expired authorization releases it. For EIP-3009 the hold can lapse at `validBefore`. For other payment schemes, the budget authority needs its own hold expiry. The reservation should carry a TTL so the behavior doesn't depend on scheme-specific fields.
+
+3. **Attenuation needs accounting, not just a smaller `maxAmount`.** With delegation chains, a child grant's limit has to be carved out of the parent's remaining budget when it's issued. Otherwise two siblings can each receive a grant for the parent's last unit, and each grant individually looks within bounds. This is the same concurrent-spend race moved up to the delegation layer. The constraint-side attenuation in edge case #2 (child never exceeds parent on exp, aud, constraints) is necessary but not sufficient. The budget side needs atomic reservation at issuance too.
+
+4. **One authority per budget.** Concurrent facilitators can share a `budgetRef` only if they all reserve against the same authority. A facilitator-local counter silently breaks aggregate enforcement. This is worth stating explicitly in the spec.
+
+**Interaction with x402 verify/settle window.** In x402, there's a gap between `/verify` (where the reservation happens) and `/settle` (where it's consumed). If the client never submits payment, or settlement fails, the reservation needs to expire. The TTL on holds covers this. The facilitator calls reserve on `/verify`, settle on `/settle`, and release on timeout or failure.
+
+**Reference implementation:** domondi1/inferrail has a dependency-free reference covering reserve, settle, release, delegate-as-reservation-against-parent, and revoke, with concurrency tests (https://github.com/domondi1/inferrail/tree/main/examples/agent_economy/typescript).
+
 ### 7. Grant replay
 
 Reusing a grant across multiple servers or facilitators.
@@ -291,7 +305,7 @@ This means MPP won't accept a delegation proposal without evidence of live adopt
 
 2. **Grant lifecycle.** Single-use or reusable? Reusable needs `jti` tracking by the facilitator. Single-use is simpler but doesn't cover subscription-style access.
 
-3. **Budget reference format.** What does `budgetRef` look like? A URI to a BAP-style budget authority? A hash of a budget artifact? How does the facilitator know which budget protocol to speak?
+3. **Budget reference format.** ~~What does `budgetRef` look like?~~ Resolved: `budgetRef` is a URI to a budget authority that implements atomic reserve/settle/release semantics. The four requirements are in edge case #6. The facilitator knows the protocol because the authority exposes a standard interface (reserve, settle, release, query). Remaining question: should the extension define that interface, or reference an external spec? The BAP verb set (AP2 #207) is the closest existing definition.
 
 ## Summary
 
