@@ -63,6 +63,19 @@ Memory store implementation: lazy expiry. On each `checkAndReserve`, sweep expir
 
 The cost, stated openly: lazy expiry means expired holds aren't released until the next `checkAndReserve` on the same key. If no new reservations come in, the budget stays locked until the next access. For active budgets this is fine. For abandoned budgets, a periodic sweep or eager expiry would be needed, but that adds complexity the in-memory store shouldn't carry. Persistent stores (Redis key expiry, Postgres scheduled jobs) handle this natively.
 
+**Reservation state machine.** TTL expiry and settlement race. An expiry sweep can release a hold at the same moment a late `/settle` tries to consume it. Without mutual exclusion, both succeed and the budget is spent twice (domondi1/inferrail#116). Reservations must be a state machine with compare-and-set transitions:
+
+```
+held → consumed   (on settle, one-way, CAS)
+held → released   (on expiry or failure, one-way, CAS)
+```
+
+Exactly one transition wins. A settle that arrives after expiry has already moved the state to `released` is refused or reported, not silently counted. A TTL longer than the scheme's own validity window keeps the race rare. The compare-and-set keeps it correct when it does happen.
+
+The cost, stated openly: CAS adds a read-before-write to every commit and release call. For the in-memory store this is a map lookup. For persistent stores, Redis `WATCH`/`MULTI` or Postgres `UPDATE ... WHERE state = 'held'` handle it natively. The alternative (no CAS) is a double-spend bug that only surfaces under concurrent expiry and settlement, which makes it hard to catch in testing and expensive to debug in production.
+
+**Existing bug in ack-policy's memory store.** The current `commit` method sets `reservation.committed = true` without checking if the reservation was already released. The `release` method checks `if (reservation.committed)` before releasing, but `commit` doesn't check if the reservation still exists (it may have been deleted by `release`). This is the same interleaving bug. The fix: both `commit` and `release` must check the reservation's current state before transitioning, and the reservation must not be deleted on release (it needs to stay in a terminal `released` state so a late `commit` can detect it).
+
 The TTL maps to the x402 verify→settle window. For EIP-3009, the TTL can match `validBefore`. For other schemes, the grant or the authority sets a default hold duration.
 
 ### 2. Grant integration
@@ -230,6 +243,7 @@ Each phase is backward compatible. Existing `PolicyStore` implementations work w
 
 - **ack-policy stays a library.** The HTTP server is a separate concern. Someone who just wants local evaluation never sees the server code.
 - **PolicyStore interface stays backward compatible.** New params are optional. Existing stores work without changes.
+- **Commit and release are mutually exclusive.** `PolicyStore` implementations MUST use compare-and-set on the reservation state for both `commit` and `release`. A reservation in a terminal state (`consumed` or `released`) rejects further transitions. This prevents the expiry/settlement interleaving bug (domondi1/inferrail#116).
 - **No ACK core dependency for the authority.** The authority validates grant JWTs using `jose`, not the ACK SDK. Same pattern as ACK's own "implementable with stock libraries" principle.
 - **Single authority per budget.** The grant's `budgetRef` URI points to exactly one authority. The authority is the single source of truth.
 - **Persistence is a prerequisite for remote authority, not optional.** The memory store is for testing. Production requires a persistent backend.
