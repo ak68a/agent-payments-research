@@ -153,8 +153,9 @@ POST /reserve
   → { allowed, reservationId, remaining }
 
 POST /settle
-  body: { reservationId }
-  → { ok }
+  body: { reservationId, paymentKey }
+  → { status: "ok", amount }
+  OR → { status: "refused", reason: expired | released | revoked | unknown_reservation | amount_exceeds_hold }
 
 POST /release
   body: { reservationId }
@@ -168,6 +169,21 @@ GET /query?grantId=X&currency=Y
 Auth: the caller presents the grant JWT. The authority validates the signature against the principal's key, checks that the grant references this authority's URI as `budgetRef`, and that the caller is the grant's agent or a facilitator acting on their behalf.
 
 For facilitator auth: the facilitator presents both the grant and the payment payload. The authority checks `grant.agent` matches `authorization.from` in the payment payload. Same check the facilitator does for delegation verification.
+
+**Settle semantics.** Settle is keyed by the payment (`paymentKey`, e.g. `authorization.nonce` for the `exact` scheme), not just the reservation ID. Two cases:
+
+- **Same payment retrying settle** (same `paymentKey` on a consumed reservation): return the original `ok` with the same amount. Facilitators retry `/settle` after timeouts. A retry that returns an error looks like a failed payment that actually went through. This is the double-pay trap from x402 #3438 moved into the budget layer. So `consumed` is terminal and idempotent for the same payment key.
+- **Different payment trying to consume the same hold**: refused with `already_consumed` or one of the other reason codes.
+
+Settle refusal reasons (from #3693 discussion, domondi1):
+
+| Reason | Meaning | Facilitator action |
+|---|---|---|
+| `expired` | Hold lapsed before settle | Don't settle. If the authorization is still valid on-chain, start over with a fresh reserve, or fail the request. |
+| `released` | Released for another reason (failure, explicit release) | Don't settle. Treat as policy refusal. |
+| `revoked` | Budget or ancestor was revoked after the hold | Don't settle. The spec should state whether in-flight holds survive revocation. |
+| `unknown_reservation` | No such hold | Bug or forgery. Don't settle. |
+| `amount_exceeds_hold` | Settle amount > reserved amount | Don't settle. Re-reserve or fail. |
 
 The cost, stated openly: the authority is a single point of failure. If it's down, no facilitator can verify aggregate budget compliance. Facilitators that don't understand `budgetRef` still verify per-payment constraints from the grant (the delegation extension is designed for this graceful degradation). But any facilitator that does check the authority will fail-closed if it's unreachable. For production, the authority needs the same availability guarantees as the facilitator itself.
 
@@ -255,3 +271,5 @@ Each phase is backward compatible. Existing `PolicyStore` implementations work w
 2. **Cross-currency budgets.** The current design is per-currency. A principal who wants "max $100 total across USDC and USD" needs cross-currency conversion, which ack-policy deliberately avoids. Deferring until there's demand.
 
 3. **Authority discovery.** The grant's `budgetRef` field is a URI. A facilitator that understands `budgetRef` calls it. A facilitator that doesn't ignores it and verifies per-payment constraints only. Is the URI enough, or does the facilitator need a capabilities endpoint? Leaning toward just the URI. Capabilities discovery adds complexity for a problem that doesn't exist yet.
+
+4. **Revocation vs in-flight holds.** If a budget or ancestor grant is revoked while a reservation is held, does the hold survive or get force-released? The `revoked` refusal reason on settle implies the hold doesn't survive. But delegation.md edge case #3 says "settlement honors what was valid at verify time" for grant revocation. The budget layer should probably match: revocation applies to future reserves, not in-flight holds. If it does force-release, a payment that was valid at verify time fails at settle, and the facilitator already told the server the payment was good. Needs a decision.
