@@ -68,6 +68,7 @@ The reference implementation below uses ACK's grant/receipt model.
 |---|---|
 | Reference spec (ACK implementation) | [ext-disputes.md](ext-disputes.md) |
 | Protocol mappings (MPP, x402) | [protocol-mappings.md](protocol-mappings.md) |
+| Card network mapping (Visa, Mastercard) | [visa-mc-mapping.md](visa-mc-mapping.md) |
 | Working example (jose) | [example.ts](example.ts) |
 
 ## Cross-protocol issues
