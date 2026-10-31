@@ -104,8 +104,11 @@ The reference implementation below uses ACK's grant/receipt model.
    "no grant" were deliberately excluded — neither can be verified
    by comparing fields in the embedded artifacts.
 
-7. **Evidence expires.** 90-day SHOULD, matching common chargeback
-   windows.
+7. **Evidence expires based on the payment rail's dispute window.**
+   The fixed 90-day SHOULD was dropped. Visa 10.4 runs 120 days;
+   a fixed number is wrong for any rail whose window differs. The
+   issuer sets `exp` based on the applicable window. See
+   [visa-mc-mapping.md](visa-mc-mapping.md).
 
 ## Dependencies (ACK reference implementation)
 
@@ -124,8 +127,11 @@ MPP and x402 have their own dependency paths — see
 - Should the offer-retention recommendation (Section 8) be a MUST?
   That strengthens dispute evidence but increases storage requirements
   for agents.
-- Is 90 days the right evidence expiry window for agent commerce, or
-  do autonomous agents need a shorter/longer window?
+- ~~Is 90 days the right evidence expiry window for agent commerce, or
+  do autonomous agents need a shorter/longer window?~~ **Resolved:**
+  dropped the fixed 90-day limit. The issuer sets `exp` based on the
+  payment rail's dispute window. (Visa 10.4 = 120 days; see
+  [visa-mc-mapping.md](visa-mc-mapping.md).)
 - Should the protocol define counter-evidence, or leave response
   mechanisms entirely to the resolution layer?
 - For protocols without an authorization-scope artifact (MPP, x402):

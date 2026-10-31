@@ -124,7 +124,7 @@ The example is non-normative. The normative claim table follows.
 | `iss` | REQUIRED | The disputant's identity (an HTTPS URL). MUST match the grant's `iss`. |
 | `sub` | REQUIRED | The agent's identity. MUST match the grant's `sub` and the receipt's `ack.agent`. |
 | `iat` | REQUIRED | When the dispute was filed. |
-| `exp` | REQUIRED | Evidence expiry. A resolver MUST reject expired evidence. SHOULD be no more than 90 days after `iat`. |
+| `exp` | REQUIRED | Evidence expiry. A resolver MUST reject expired evidence. The issuer SHOULD set `exp` based on the applicable dispute window for the payment rail, not a fixed duration. |
 | `jti` | REQUIRED | Unique identifier for this dispute. |
 | `reason` | REQUIRED | A reason code from the registry (Section 5). |
 | `grant_ref` | REQUIRED | Artifact reference to the grant: SHA-256 of the grant JWT's compact serialization, base64url-encoded. MUST match the `ack.grant` value in the receipt. |
@@ -420,9 +420,11 @@ business/legal problem.
 specific replay-detection mechanism.
 
 **Evidence expiry.** The `exp` claim limits the window in which
-evidence is valid. A resolver SHOULD reject evidence filed more than
-90 days after the receipt's `iat`, consistent with common chargeback
-windows.
+evidence is valid. The issuer SHOULD set `exp` based on the applicable
+dispute window for the payment rail (e.g. 120 days for Visa 10.4
+fraud disputes per the April 2026 rulebook). A fixed duration would
+be wrong for any rail whose window differs. See
+[visa-mc-mapping.md](visa-mc-mapping.md) for the specific windows.
 
 **Grant key rotation.** If the disputant rotates keys between grant
 issuance and dispute filing, the dispute is signed with the new key
