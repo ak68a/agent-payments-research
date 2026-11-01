@@ -1,0 +1,619 @@
+{
+  "iussum_commit": "e476c89",
+  "spec": "ext-disputes.md section 5.6 (canonical field set) as proposed in ak68a/agent-payments-research PR #1, head 3199225",
+  "inputs": {
+    "input/resolve.json": 56,
+    "input/jcs.json": 4,
+    "input/recorded-payment-5KsYz26T.json": "used by 3 resolve cases whose payment is \"RECORDED\""
+  },
+  "counts": {
+    "resolve_cases": 56,
+    "records": 10,
+    "no_registry_code": 9,
+    "not_mismatch_records": 15,
+    "rejected_before_a_record": 22,
+    "no_block_time": 0,
+    "unmappable": 0,
+    "jcs_cases_reproduced_by_make_mjs": 4
+  },
+  "records": [
+    {
+      "index": 1,
+      "name": "R2 amount over cap, mandate presented: seller bears it",
+      "iussum": {
+        "verdict": "valid",
+        "reason": "amount_over_cap",
+        "liable": "seller"
+      },
+      "code": "scope-exceeded",
+      "tier": 1,
+      "canonical": {
+        "reason": "scope-exceeded",
+        "tier": 1,
+        "evidence": {
+          "delta": [
+            {
+              "field": "per_payment_max",
+              "authorized": "50000",
+              "actual": "60000",
+              "currency": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"
+            }
+          ]
+        },
+        "iat": 1800000100
+      },
+      "jcs": "{\"evidence\":{\"delta\":[{\"actual\":\"60000\",\"authorized\":\"50000\",\"currency\":\"4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU\",\"field\":\"per_payment_max\"}]},\"iat\":1800000100,\"reason\":\"scope-exceeded\",\"tier\":1}",
+      "sha256_b64url": "wzJP63DI9omc5TDsYOzmjse1Ntr1SF_Ct30ycTVll_k",
+      "sha256_hex": "c3324feb70c8f6899ce530ec60ece68ec7b536daf5485fc2b77d3271356597f9"
+    },
+    {
+      "index": 2,
+      "name": "R2 pay_to not allowed, mandate presented: seller",
+      "iussum": {
+        "verdict": "valid",
+        "reason": "pay_to_not_allowed",
+        "liable": "seller"
+      },
+      "code": "audience-mismatch",
+      "tier": 1,
+      "canonical": {
+        "reason": "audience-mismatch",
+        "tier": 1,
+        "evidence": {
+          "delta": [
+            {
+              "field": "allow.pay_to",
+              "authorized": [
+                "5hQASoTWuCSjSz3GfUmrVDfUKEvRMDLpqUK1wuUi5Gk7",
+                "2uh7t2wh3omQNzzRypGj1rVJhtmJ6HtR4qFy9f2aNbg9"
+              ],
+              "actual": "BpunsCzN5vTo9ZpaunCEwCzzWAHEMYTcd9LY5VZqhWji"
+            }
+          ]
+        },
+        "iat": 1800000100
+      },
+      "jcs": "{\"evidence\":{\"delta\":[{\"actual\":\"BpunsCzN5vTo9ZpaunCEwCzzWAHEMYTcd9LY5VZqhWji\",\"authorized\":[\"5hQASoTWuCSjSz3GfUmrVDfUKEvRMDLpqUK1wuUi5Gk7\",\"2uh7t2wh3omQNzzRypGj1rVJhtmJ6HtR4qFy9f2aNbg9\"],\"field\":\"allow.pay_to\"}]},\"iat\":1800000100,\"reason\":\"audience-mismatch\",\"tier\":1}",
+      "sha256_b64url": "jBloxMXvZvlJJC1v-Q1icz3jxFWAztxbOxD8d6SEK6I",
+      "sha256_hex": "8c1968c4c5ef66f949242d6ff90d62733de3c45580cedc5b3b10fc77a4842ba2"
+    },
+    {
+      "index": 3,
+      "name": "R2 resource outside the prefix: seller",
+      "iussum": {
+        "verdict": "valid",
+        "reason": "resource_not_allowed",
+        "liable": "seller"
+      },
+      "code": "scope-exceeded",
+      "tier": 1,
+      "canonical": {
+        "reason": "scope-exceeded",
+        "tier": 1,
+        "evidence": {
+          "delta": [
+            {
+              "field": "allow.resource_prefix",
+              "authorized": [
+                "https://api.example.test/v1/"
+              ],
+              "actual": "https://other.example/x"
+            }
+          ]
+        },
+        "iat": 1800000100
+      },
+      "jcs": "{\"evidence\":{\"delta\":[{\"actual\":\"https://other.example/x\",\"authorized\":[\"https://api.example.test/v1/\"],\"field\":\"allow.resource_prefix\"}]},\"iat\":1800000100,\"reason\":\"scope-exceeded\",\"tier\":1}",
+      "sha256_b64url": "fnQ309kExDcziSBTarvn2h-Qs6CytZgQl9f7f1Pgvgs",
+      "sha256_hex": "7e7437d3d904c437338920536abbe7da1f90b3a0b2b5981097d7fb7f53e0be0b"
+    },
+    {
+      "index": 7,
+      "name": "R2 payment after expiry: seller",
+      "iussum": {
+        "verdict": "valid",
+        "reason": "mandate_expired",
+        "liable": "seller"
+      },
+      "code": "grant-expired",
+      "tier": 1,
+      "canonical": {
+        "reason": "grant-expired",
+        "tier": 1,
+        "evidence": {
+          "delta": [
+            {
+              "field": "expires_at",
+              "authorized": 1800604800,
+              "actual": 1800691200
+            }
+          ]
+        },
+        "iat": 1800691200
+      },
+      "jcs": "{\"evidence\":{\"delta\":[{\"actual\":1800691200,\"authorized\":1800604800,\"field\":\"expires_at\"}]},\"iat\":1800691200,\"reason\":\"grant-expired\",\"tier\":1}",
+      "sha256_b64url": "ZMEPHqmklY-6_wSwy73gb78hXBY7XD5j-P8BEW41Sus",
+      "sha256_hex": "64c10f1ea9a4958fbaff04b0cbbde06fbf215c163b5c3e63f8ff01116e354aeb"
+    },
+    {
+      "index": 8,
+      "name": "settled_at inside the window but block time outside it: block time wins",
+      "iussum": {
+        "verdict": "valid",
+        "reason": "mandate_expired",
+        "liable": "seller"
+      },
+      "code": "grant-expired",
+      "tier": 1,
+      "canonical": {
+        "reason": "grant-expired",
+        "tier": 1,
+        "evidence": {
+          "delta": [
+            {
+              "field": "expires_at",
+              "authorized": 1800604800,
+              "actual": 1800691200
+            }
+          ]
+        },
+        "iat": 1800691200
+      },
+      "jcs": "{\"evidence\":{\"delta\":[{\"actual\":1800691200,\"authorized\":1800604800,\"field\":\"expires_at\"}]},\"iat\":1800691200,\"reason\":\"grant-expired\",\"tier\":1}",
+      "sha256_b64url": "ZMEPHqmklY-6_wSwy73gb78hXBY7XD5j-P8BEW41Sus",
+      "sha256_hex": "64c10f1ea9a4958fbaff04b0cbbde06fbf215c163b5c3e63f8ff01116e354aeb"
+    },
+    {
+      "index": 11,
+      "name": "R3 receipt with no mandate binding, out of scope: agent operator",
+      "iussum": {
+        "verdict": "valid",
+        "reason": "pay_to_not_allowed",
+        "liable": "agent_operator"
+      },
+      "code": "audience-mismatch",
+      "tier": 1,
+      "canonical": {
+        "reason": "audience-mismatch",
+        "tier": 1,
+        "evidence": {
+          "delta": [
+            {
+              "field": "allow.pay_to",
+              "authorized": [
+                "5hQASoTWuCSjSz3GfUmrVDfUKEvRMDLpqUK1wuUi5Gk7",
+                "2uh7t2wh3omQNzzRypGj1rVJhtmJ6HtR4qFy9f2aNbg9"
+              ],
+              "actual": "BpunsCzN5vTo9ZpaunCEwCzzWAHEMYTcd9LY5VZqhWji"
+            }
+          ]
+        },
+        "iat": 1800000100
+      },
+      "jcs": "{\"evidence\":{\"delta\":[{\"actual\":\"BpunsCzN5vTo9ZpaunCEwCzzWAHEMYTcd9LY5VZqhWji\",\"authorized\":[\"5hQASoTWuCSjSz3GfUmrVDfUKEvRMDLpqUK1wuUi5Gk7\",\"2uh7t2wh3omQNzzRypGj1rVJhtmJ6HtR4qFy9f2aNbg9\"],\"field\":\"allow.pay_to\"}]},\"iat\":1800000100,\"reason\":\"audience-mismatch\",\"tier\":1}",
+      "sha256_b64url": "jBloxMXvZvlJJC1v-Q1icz3jxFWAztxbOxD8d6SEK6I",
+      "sha256_hex": "8c1968c4c5ef66f949242d6ff90d62733de3c45580cedc5b3b10fc77a4842ba2"
+    },
+    {
+      "index": 18,
+      "name": "R3 receipt names another grant_tx than the dispute: not presented",
+      "iussum": {
+        "verdict": "valid",
+        "reason": "pay_to_not_allowed",
+        "liable": "agent_operator"
+      },
+      "code": "audience-mismatch",
+      "tier": 1,
+      "canonical": {
+        "reason": "audience-mismatch",
+        "tier": 1,
+        "evidence": {
+          "delta": [
+            {
+              "field": "allow.pay_to",
+              "authorized": [
+                "5hQASoTWuCSjSz3GfUmrVDfUKEvRMDLpqUK1wuUi5Gk7",
+                "2uh7t2wh3omQNzzRypGj1rVJhtmJ6HtR4qFy9f2aNbg9"
+              ],
+              "actual": "BpunsCzN5vTo9ZpaunCEwCzzWAHEMYTcd9LY5VZqhWji"
+            }
+          ]
+        },
+        "iat": 1800000100
+      },
+      "jcs": "{\"evidence\":{\"delta\":[{\"actual\":\"BpunsCzN5vTo9ZpaunCEwCzzWAHEMYTcd9LY5VZqhWji\",\"authorized\":[\"5hQASoTWuCSjSz3GfUmrVDfUKEvRMDLpqUK1wuUi5Gk7\",\"2uh7t2wh3omQNzzRypGj1rVJhtmJ6HtR4qFy9f2aNbg9\"],\"field\":\"allow.pay_to\"}]},\"iat\":1800000100,\"reason\":\"audience-mismatch\",\"tier\":1}",
+      "sha256_b64url": "jBloxMXvZvlJJC1v-Q1icz3jxFWAztxbOxD8d6SEK6I",
+      "sha256_hex": "8c1968c4c5ef66f949242d6ff90d62733de3c45580cedc5b3b10fc77a4842ba2"
+    },
+    {
+      "index": 35,
+      "name": "no receipt (seller never checked): the chain alone proves pay_to out of scope: agent operator, resource unjudged",
+      "iussum": {
+        "verdict": "valid",
+        "reason": "pay_to_not_allowed",
+        "liable": "agent_operator"
+      },
+      "code": "audience-mismatch",
+      "tier": 1,
+      "canonical": {
+        "reason": "audience-mismatch",
+        "tier": 1,
+        "evidence": {
+          "delta": [
+            {
+              "field": "allow.pay_to",
+              "authorized": [
+                "5hQASoTWuCSjSz3GfUmrVDfUKEvRMDLpqUK1wuUi5Gk7",
+                "2uh7t2wh3omQNzzRypGj1rVJhtmJ6HtR4qFy9f2aNbg9"
+              ],
+              "actual": "BpunsCzN5vTo9ZpaunCEwCzzWAHEMYTcd9LY5VZqhWji"
+            }
+          ]
+        },
+        "iat": 1800000100
+      },
+      "jcs": "{\"evidence\":{\"delta\":[{\"actual\":\"BpunsCzN5vTo9ZpaunCEwCzzWAHEMYTcd9LY5VZqhWji\",\"authorized\":[\"5hQASoTWuCSjSz3GfUmrVDfUKEvRMDLpqUK1wuUi5Gk7\",\"2uh7t2wh3omQNzzRypGj1rVJhtmJ6HtR4qFy9f2aNbg9\"],\"field\":\"allow.pay_to\"}]},\"iat\":1800000100,\"reason\":\"audience-mismatch\",\"tier\":1}",
+      "sha256_b64url": "jBloxMXvZvlJJC1v-Q1icz3jxFWAztxbOxD8d6SEK6I",
+      "sha256_hex": "8c1968c4c5ef66f949242d6ff90d62733de3c45580cedc5b3b10fc77a4842ba2"
+    },
+    {
+      "index": 38,
+      "name": "no receipt, amount over the cap: agent operator",
+      "iussum": {
+        "verdict": "valid",
+        "reason": "amount_over_cap",
+        "liable": "agent_operator"
+      },
+      "code": "scope-exceeded",
+      "tier": 1,
+      "canonical": {
+        "reason": "scope-exceeded",
+        "tier": 1,
+        "evidence": {
+          "delta": [
+            {
+              "field": "per_payment_max",
+              "authorized": "50000",
+              "actual": "60000",
+              "currency": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"
+            }
+          ]
+        },
+        "iat": 1800000100
+      },
+      "jcs": "{\"evidence\":{\"delta\":[{\"actual\":\"60000\",\"authorized\":\"50000\",\"currency\":\"4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU\",\"field\":\"per_payment_max\"}]},\"iat\":1800000100,\"reason\":\"scope-exceeded\",\"tier\":1}",
+      "sha256_b64url": "wzJP63DI9omc5TDsYOzmjse1Ntr1SF_Ct30ycTVll_k",
+      "sha256_hex": "c3324feb70c8f6899ce530ec60ece68ec7b536daf5485fc2b77d3271356597f9"
+    },
+    {
+      "index": 55,
+      "name": "recorded devnet payment: mandate that does not allow its pay_to: seller liable",
+      "iussum": {
+        "verdict": "valid",
+        "reason": "pay_to_not_allowed",
+        "liable": "seller"
+      },
+      "code": "audience-mismatch",
+      "tier": 1,
+      "canonical": {
+        "reason": "audience-mismatch",
+        "tier": 1,
+        "evidence": {
+          "delta": [
+            {
+              "field": "allow.pay_to",
+              "authorized": [
+                "2uh7t2wh3omQNzzRypGj1rVJhtmJ6HtR4qFy9f2aNbg9"
+              ],
+              "actual": "5hQASoTWuCSjSz3GfUmrVDfUKEvRMDLpqUK1wuUi5Gk7"
+            }
+          ]
+        },
+        "iat": 1792416301
+      },
+      "jcs": "{\"evidence\":{\"delta\":[{\"actual\":\"5hQASoTWuCSjSz3GfUmrVDfUKEvRMDLpqUK1wuUi5Gk7\",\"authorized\":[\"2uh7t2wh3omQNzzRypGj1rVJhtmJ6HtR4qFy9f2aNbg9\"],\"field\":\"allow.pay_to\"}]},\"iat\":1792416301,\"reason\":\"audience-mismatch\",\"tier\":1}",
+      "sha256_b64url": "gtqeucz7snG3LyHUSGApql0ENkEkdudV-LmuE724XKo",
+      "sha256_hex": "82da9eb9ccfbb271b72f21d4486029aa5d0436412476e755f8b9ae13bdb85caa"
+    }
+  ],
+  "no_registry_code": [
+    {
+      "index": 4,
+      "name": "R2 asset mismatch: seller",
+      "iussum": {
+        "verdict": "valid",
+        "reason": "asset_mismatch",
+        "liable": "seller"
+      }
+    },
+    {
+      "index": 5,
+      "name": "R2 network mismatch (resolver watches another cluster): seller",
+      "iussum": {
+        "verdict": "valid",
+        "reason": "network_mismatch",
+        "liable": "seller"
+      }
+    },
+    {
+      "index": 6,
+      "name": "R2 payment before not_before: seller",
+      "iussum": {
+        "verdict": "valid",
+        "reason": "mandate_not_yet_valid",
+        "liable": "seller"
+      }
+    },
+    {
+      "index": 34,
+      "name": "two debits by the agent in one transaction cannot have gone through x402: debit_not_x402, agent operator",
+      "iussum": {
+        "verdict": "valid",
+        "reason": "debit_not_x402",
+        "liable": "agent_operator"
+      }
+    },
+    {
+      "index": 40,
+      "name": "one agent debit plus another TransferChecked from a different account in the same transaction is not the x402 shape: debit_not_x402, agent operator",
+      "iussum": {
+        "verdict": "valid",
+        "reason": "debit_not_x402",
+        "liable": "agent_operator"
+      }
+    },
+    {
+      "index": 41,
+      "name": "a plain Transfer by the agent out of the granted account cannot have gone through x402: debit_not_x402, agent operator",
+      "iussum": {
+        "verdict": "valid",
+        "reason": "debit_not_x402",
+        "liable": "agent_operator"
+      }
+    },
+    {
+      "index": 42,
+      "name": "a BurnChecked by the agent: debit_not_x402",
+      "iussum": {
+        "verdict": "valid",
+        "reason": "debit_not_x402",
+        "liable": "agent_operator"
+      }
+    },
+    {
+      "index": 43,
+      "name": "a Burn by the agent: debit_not_x402",
+      "iussum": {
+        "verdict": "valid",
+        "reason": "debit_not_x402",
+        "liable": "agent_operator"
+      }
+    },
+    {
+      "index": 44,
+      "name": "a TransferChecked made by CPI (inner instruction): debit_not_x402",
+      "iussum": {
+        "verdict": "valid",
+        "reason": "debit_not_x402",
+        "liable": "agent_operator"
+      }
+    }
+  ],
+  "not_mismatch_records": [
+    {
+      "index": 0,
+      "name": "R1 in scope, receipt bound: principal bears it, dispute invalid",
+      "iussum": {
+        "verdict": "invalid",
+        "reason": "in_scope",
+        "liable": "principal"
+      }
+    },
+    {
+      "index": 9,
+      "name": "no block time on chain: fall back to settled_at, say so",
+      "iussum": {
+        "verdict": "invalid",
+        "reason": "in_scope",
+        "liable": "principal"
+      }
+    },
+    {
+      "index": 14,
+      "name": "mandate superseded AFTER the payment slot: still judged",
+      "iussum": {
+        "verdict": "invalid",
+        "reason": "in_scope",
+        "liable": "principal"
+      }
+    },
+    {
+      "index": 15,
+      "name": "history not shown to be complete: history_incomplete, never in_scope",
+      "iussum": {
+        "verdict": "invalid",
+        "reason": "history_incomplete",
+        "liable": null
+      }
+    },
+    {
+      "index": 16,
+      "name": "history missing (could not be read): history_incomplete",
+      "iussum": {
+        "verdict": "invalid",
+        "reason": "history_incomplete",
+        "liable": null
+      }
+    },
+    {
+      "index": 17,
+      "name": "the disputed payment is not in the history: history_incomplete",
+      "iussum": {
+        "verdict": "invalid",
+        "reason": "history_incomplete",
+        "liable": null
+      }
+    },
+    {
+      "index": 36,
+      "name": "no receipt and nothing out of scope on chain: invalid, principal, resource unjudged",
+      "iussum": {
+        "verdict": "invalid",
+        "reason": "in_scope",
+        "liable": "principal"
+      }
+    },
+    {
+      "index": 37,
+      "name": "no receipt and no block time: the window is unjudged too",
+      "iussum": {
+        "verdict": "invalid",
+        "reason": "in_scope",
+        "liable": "principal"
+      }
+    },
+    {
+      "index": 45,
+      "name": "the balance of the granted account fell by more than the parsed instructions explain: history_incomplete, liable null",
+      "iussum": {
+        "verdict": "invalid",
+        "reason": "history_incomplete",
+        "liable": null
+      }
+    },
+    {
+      "index": 46,
+      "name": "the debits found do not add up to the allowance that is gone: history_incomplete, liable null",
+      "iussum": {
+        "verdict": "invalid",
+        "reason": "history_incomplete",
+        "liable": null
+      }
+    },
+    {
+      "index": 47,
+      "name": "no allowance read: history_incomplete, never in_scope",
+      "iussum": {
+        "verdict": "invalid",
+        "reason": "history_incomplete",
+        "liable": null
+      }
+    },
+    {
+      "index": 48,
+      "name": "the allowance cross-check is skipped for a superseded grant (not current)",
+      "iussum": {
+        "verdict": "invalid",
+        "reason": "in_scope",
+        "liable": "principal"
+      }
+    },
+    {
+      "index": 50,
+      "name": "same slot as the grant and no block order known: history_incomplete, liable null",
+      "iussum": {
+        "verdict": "invalid",
+        "reason": "history_incomplete",
+        "liable": null
+      }
+    },
+    {
+      "index": 51,
+      "name": "same slot as the grant, block order says the payment came after the grant: judged",
+      "iussum": {
+        "verdict": "invalid",
+        "reason": "in_scope",
+        "liable": "principal"
+      }
+    },
+    {
+      "index": 54,
+      "name": "recorded devnet payment: consistent receipt, mandate allows it: in scope",
+      "iussum": {
+        "verdict": "invalid",
+        "reason": "in_scope",
+        "liable": "principal"
+      }
+    }
+  ],
+  "rejected_before_a_record": [
+    {
+      "reason": "tx_mismatch",
+      "count": 10,
+      "indexes": [
+        10,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        49,
+        52,
+        53
+      ]
+    },
+    {
+      "reason": "mandate_mismatch",
+      "count": 1,
+      "indexes": [
+        12
+      ]
+    },
+    {
+      "reason": "mandate_superseded",
+      "count": 1,
+      "indexes": [
+        13
+      ]
+    },
+    {
+      "reason": "signature_invalid",
+      "count": 3,
+      "indexes": [
+        19,
+        20,
+        21
+      ]
+    },
+    {
+      "reason": "grant_mismatch",
+      "count": 2,
+      "indexes": [
+        22,
+        24
+      ]
+    },
+    {
+      "reason": "grant_not_found",
+      "count": 1,
+      "indexes": [
+        23
+      ]
+    },
+    {
+      "reason": "mandate_invalid",
+      "count": 1,
+      "indexes": [
+        25
+      ]
+    },
+    {
+      "reason": "tx_not_found",
+      "count": 2,
+      "indexes": [
+        26,
+        27
+      ]
+    },
+    {
+      "reason": "mandate_missing",
+      "count": 1,
+      "indexes": [
+        39
+      ]
+    }
+  ],
+  "no_block_time": [],
+  "unmappable": []
+}
