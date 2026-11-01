@@ -25,12 +25,12 @@ Rules taken from section 5.6 of the unmerged PR #1 (head `3199225`, "canonical f
 A record for one case looks like this (case 1; keys are sorted by JCS, so the field names `reason`, `tier`, `evidence.delta` with entries `field`, `authorized`, `actual`, `currency`, and `iat` are the whole vocabulary):
 
 ```json
-{"evidence":{"delta":[{"actual":"60000","authorized":"50000","currency":"4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU","field":"per_payment_max"}]},"iat":1800000100,"reason":"scope-exceeded","tier":1}
+{"evidence":{"delta":[{"actual":"60000","authorized":"50000","currency":"4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU","field":"per_payment_max"}]},"iat":1800003700,"reason":"scope-exceeded","tier":1}
 ```
 
 How each value is read, with no value invented:
 
-- `iat` is the payment's `blockTime` from the case input. Section 4.2 defines `iat` as the time the dispute was filed; the iussum cases have no filing time, so the block time is used and this is an open question (below).
+- `iat` is the payment's `blockTime` from the case input plus 3600 seconds: a fixed filing time one hour after the payment. Section 4.2 defines `iat` as the time the dispute was filed, and section 6 Step 5 item 4 says the dispute's `iat` MUST follow the receipt's `iat`; the iussum cases carry no filing time, and the block time itself would not follow the receipt's time. The delay is a constant in `make.mjs` (`FILING_DELAY_S`), not a value from the cases.
 - `field` is a dot-path into the mandate (the JSON document that plays the grant's role; the ApproveChecked grant transaction carries a Memo with a summary line that ends in the mandate's id): `per_payment_max`, `allow.pay_to`, `allow.resource_prefix`, `expires_at`.
 - `authorized` is the value at that path in the mandate (arrays stay arrays; `expires_at` stays a number).
 - `actual` is read from the chain payment (amount, destination owner, block time) or the seller receipt (`resource`); where both exist, `make.mjs` stops if they differ.
@@ -51,18 +51,18 @@ The ten records (`index` is the position in `input/resolve.json`):
 
 | index | iussum reason | iussum liable | code | `field` | sha256 (base64url) |
 |---|---|---|---|---|---|
-| 1 | `amount_over_cap` | seller | `scope-exceeded` | `per_payment_max` | `wzJP63DI9omc…` |
-| 2 | `pay_to_not_allowed` | seller | `audience-mismatch` | `allow.pay_to` | `jBloxMXvZvlJ…` |
-| 3 | `resource_not_allowed` | seller | `scope-exceeded` | `allow.resource_prefix` | `fnQ309kExDcz…` |
-| 7 | `mandate_expired` | seller | `grant-expired` | `expires_at` | `ZMEPHqmklY-6…` |
-| 8 | `mandate_expired` | seller | `grant-expired` | `expires_at` | `ZMEPHqmklY-6…` |
-| 11 | `pay_to_not_allowed` | agent_operator | `audience-mismatch` | `allow.pay_to` | `jBloxMXvZvlJ…` |
-| 18 | `pay_to_not_allowed` | agent_operator | `audience-mismatch` | `allow.pay_to` | `jBloxMXvZvlJ…` |
-| 35 | `pay_to_not_allowed` | agent_operator | `audience-mismatch` | `allow.pay_to` | `jBloxMXvZvlJ…` |
-| 38 | `amount_over_cap` | agent_operator | `scope-exceeded` | `per_payment_max` | `wzJP63DI9omc…` |
-| 55 | `pay_to_not_allowed` | seller | `audience-mismatch` | `allow.pay_to` | `gtqeucz7snG3…` |
+| 1 | `amount_over_cap` | seller | `scope-exceeded` | `per_payment_max` | `b1vI2CE1xt9j…` |
+| 2 | `pay_to_not_allowed` | seller | `audience-mismatch` | `allow.pay_to` | `EPIqLTsLEO4C…` |
+| 3 | `resource_not_allowed` | seller | `scope-exceeded` | `allow.resource_prefix` | `_A0qXk_XtGZU…` |
+| 7 | `mandate_expired` | seller | `grant-expired` | `expires_at` | `PzoY1PXP0S8s…` |
+| 8 | `mandate_expired` | seller | `grant-expired` | `expires_at` | `PzoY1PXP0S8s…` |
+| 11 | `pay_to_not_allowed` | agent_operator | `audience-mismatch` | `allow.pay_to` | `EPIqLTsLEO4C…` |
+| 18 | `pay_to_not_allowed` | agent_operator | `audience-mismatch` | `allow.pay_to` | `EPIqLTsLEO4C…` |
+| 35 | `pay_to_not_allowed` | agent_operator | `audience-mismatch` | `allow.pay_to` | `EPIqLTsLEO4C…` |
+| 38 | `amount_over_cap` | agent_operator | `scope-exceeded` | `per_payment_max` | `b1vI2CE1xt9j…` |
+| 55 | `pay_to_not_allowed` | seller | `audience-mismatch` | `allow.pay_to` | `j6AYoPXGXvfT…` |
 
-Several cases produce the same record: indexes 1 and 38; 2, 11, 18 and 35; 7 and 8. The record holds the mismatch only. iussum's liable party (`seller` or `agent_operator`) depends on whether the seller was shown the mandate, which is not part of the record, so the same bytes and the same hash belong to different liability outcomes. That is a property of the record shape, not a defect; it means the liable party has to travel in the resolver's output (ak68a made the same point about the third state on x402#3500).
+**Cases with different liable parties produce the identical record.** Indexes 1 (seller) and 38 (agent_operator) give the same bytes and the same hash; so do 2 (seller) with 11, 18 and 35 (all agent_operator); 7 and 8 are the same case type with the same liable party. iussum's liable party for a mismatch depends on whether the seller was shown the mandate before it settled: shown, the seller bears it; not shown, the agent operator does. That fact is not in the section 5.6 field set, so the hash cannot tell the two outcomes apart. It is the disclosure mode of x402 #3693 (full / attestation / none). Either the canonical set carries the disclosure mode, or the spec states that the hash identifies the claim (the mismatch), not the decision (who bears it). As it stands the liable party has to travel in the resolver's output.
 
 ## What is not mapped
 
@@ -125,7 +125,7 @@ So for a draft whose scope artifact may be a signed message, the finding is that
 
 ## Open questions
 
-1. `iat`: dispute filing time (section 4.2) or the payment's block time (used here)? A vector needs a fixed value either way.
+1. `iat`: the vectors use the payment's block time plus a fixed 3600 seconds, so that the dispute follows the payment as Step 5 item 4 requires. Is a fixed offset the way you want filing time to appear in vectors, and is 3600 seconds acceptable or should the vectors carry a separate filing time per case?
 2. `field`: a dot-path into the grant's claims works when the grant has named claims. iussum's mandate keys are `per_payment_max`, `allow.pay_to`, `allow.resource_prefix`, `expires_at`. iussum's own delta uses the labels `amount`, `pay_to`, `resource`, `time`. Which naming should a cross-implementation vector use?
 3. `authorized` for an allow-list (`allow.pay_to`, `allow.resource_prefix`): the whole array (used here) or the matched/violated element? Is an array allowed as a delta value?
 4. `currency`: a symbol, a CAIP-19 asset id, or the chain's own identifier? Here it is the mint address, because the input has nothing else. Section 4.4 says it is present when `field` references an amount, so it appears on `per_payment_max` only.

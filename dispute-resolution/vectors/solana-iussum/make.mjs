@@ -4,13 +4,15 @@
 // For each resolver case whose iussum reason has an equivalent code in ext-disputes.md section 5.2 it builds the section 5.6 canonical record
 //   { reason, tier, evidence: { delta: [ { field, authorized, actual, currency? } ] }, iat }
 // serialises it with JCS (RFC 8785) and hashes it with SHA-256 (base64url without padding, and hex). It never invents a code, a field or a value:
-// every value is read from the case's mandate, its receipt or its payment. A case that cannot be turned into a record is listed, with the reason.
+// every value is read from the case's mandate, its receipt or its payment; the one exception is the fixed filing delay of `iat` above. A case that cannot be turned into a record is listed, with the reason.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 
 const here = (p) => new URL(p, import.meta.url);
 const read = (p) => JSON.parse(readFileSync(here(p), 'utf8'));
 const IUSSUM_COMMIT = 'e476c89';
+// The dispute's iat is a fixed filing time one hour after the payment's block time. ext-disputes.md section 6 Step 5 item 4: the dispute's iat MUST follow the receipt's iat, and the iussum cases carry no filing time of their own.
+const FILING_DELAY_S = 3600;
 
 // ---- JCS (RFC 8785) for the value types that occur here: null, boolean, string, finite number, array, object.
 // Keys sort by UTF-16 code unit (the default string order of Array.prototype.sort); strings and numbers use ECMAScript's own serialisation, which is what RFC 8785 specifies.
@@ -74,7 +76,7 @@ cases.forEach((c, index) => {
   }
   const { mandate, receipt } = c.input;
   const pay = chainPayment(c.input.payment);
-  if (pay.blockTime === null) return noBlockTime.push(base); // brief: iat is the payment's block time; without one there is no record
+  if (pay.blockTime === null) return noBlockTime.push(base); // iat is the block time plus the fixed delay; without a block time there is no record
   if (!pay.transfer) return unmappable.push({ ...base, why: 'the payment does not have exactly one top-level transferChecked to read the actual value from' });
 
   // the value the receipt claims is cross-checked against the chain; the delta carries the value the chain shows
@@ -92,7 +94,7 @@ cases.forEach((c, index) => {
     Object.assign(entry, { authorized: mandate.expires_at, actual: pay.blockTime });
   }
   // key order below is the order of the section 5.6 field set; JCS sorts it anyway
-  const canonical = { reason: m.code, tier: 1, evidence: { delta: [entry] }, iat: pay.blockTime };
+  const canonical = { reason: m.code, tier: 1, evidence: { delta: [entry] }, iat: pay.blockTime + FILING_DELAY_S };
   const text = jcs(canonical);
   const digest = sha(text);
   records.push({ ...base, code: m.code, tier: 1, canonical, jcs: text, sha256_b64url: digest.toString('base64url'), sha256_hex: digest.toString('hex') });
