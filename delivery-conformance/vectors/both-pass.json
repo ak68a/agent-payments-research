@@ -1,0 +1,29 @@
+{
+  "format": "delivery-conformance-vector/v1",
+  "id": "both-pass",
+  "criteria": {
+    "content_type": "application/json",
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "required": [
+        "records"
+      ],
+      "properties": {
+        "records": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "delivered_body": "{\"records\":3}",
+  "body_encoding": "utf-8",
+  "expected_digest": "sha256:e6e73c79bf472197bf17ed49bce0cd18c4075749ce442755d6f97adaa70f8fdc",
+  "expected_checks": {
+    "digest": "pass",
+    "schema": "pass"
+  },
+  "expected_findings": []
+}
