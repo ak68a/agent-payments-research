@@ -1,0 +1,449 @@
+{
+  "spec": "ext-disputes.md section 5.6 canonical field set as used by vectors/solana-iussum (reason, tier, evidence.delta, iat; JCS; SHA-256 base64url)",
+  "network": "eip155:8453",
+  "inputs": {
+    "input/cases.json": 10,
+    "input/receipts": 3,
+    "input/chain-id.json": "eip155:8453",
+    "input/fixtures.json": 4
+  },
+  "counts": {
+    "cases": 10,
+    "records": 4,
+    "proposed_code_records": 3,
+    "in_scope": 3,
+    "pitfalls": 4,
+    "fixtures": 4,
+    "jcs_cases_reproduced_by_make_mjs": 4
+  },
+  "records": [
+    {
+      "index": 2,
+      "name": "B3 amount over the per-payment cap",
+      "tx": "0xbc7f261ab5b03d331934a27970466c2927f50c1831c880eb524aa2fe6ffa8928",
+      "payment": {
+        "network": "eip155:8453",
+        "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "payer": "0xe54bb381c683b9ae150f561778f0d7bdc1065876",
+        "to": "0xf8c639d3e47ab60ff96bcc144260f5d8bea344f6",
+        "amount": "2000",
+        "block_time": 1794044049
+      },
+      "code": "scope-exceeded",
+      "tier": 1,
+      "canonical": {
+        "reason": "scope-exceeded",
+        "tier": 1,
+        "evidence": {
+          "delta": [
+            {
+              "field": "per_payment_max",
+              "authorized": "1000",
+              "actual": "2000",
+              "currency": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+            }
+          ]
+        },
+        "iat": 1794050000
+      },
+      "jcs": "{\"evidence\":{\"delta\":[{\"actual\":\"2000\",\"authorized\":\"1000\",\"currency\":\"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913\",\"field\":\"per_payment_max\"}]},\"iat\":1794050000,\"reason\":\"scope-exceeded\",\"tier\":1}",
+      "sha256_b64url": "FwvPwzb5tbMjkK20h1AkJgG-TkMk_91RwkPcYe4XeLQ",
+      "sha256_hex": "170bcfc336f9b5b32390adb48750242601be4e4324ffdd51c243dc61ee1778b4"
+    },
+    {
+      "index": 3,
+      "name": "B4 payee not in the allow-list",
+      "tx": "0x37e2cac6dac5b5b6ae4729f19c070f8cc108e84fabe616ce243329015ace1bd4",
+      "payment": {
+        "network": "eip155:8453",
+        "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "payer": "0xe54bb381c683b9ae150f561778f0d7bdc1065876",
+        "to": "0x995ffef6c39234f0bbc95cf0e84fe1b6e6e2d8e0",
+        "amount": "5000",
+        "block_time": 1794119226
+      },
+      "code": "audience-mismatch",
+      "tier": 1,
+      "canonical": {
+        "reason": "audience-mismatch",
+        "tier": 1,
+        "evidence": {
+          "delta": [
+            {
+              "field": "allow.pay_to",
+              "authorized": [
+                "0xf8c639d3e47ab60ff96bcc144260f5d8bea344f6"
+              ],
+              "actual": "0x995ffef6c39234f0bbc95cf0e84fe1b6e6e2d8e0"
+            }
+          ]
+        },
+        "iat": 1794125000
+      },
+      "jcs": "{\"evidence\":{\"delta\":[{\"actual\":\"0x995ffef6c39234f0bbc95cf0e84fe1b6e6e2d8e0\",\"authorized\":[\"0xf8c639d3e47ab60ff96bcc144260f5d8bea344f6\"],\"field\":\"allow.pay_to\"}]},\"iat\":1794125000,\"reason\":\"audience-mismatch\",\"tier\":1}",
+      "sha256_b64url": "L69mKe0sk5jkPqe_9KS2DxsfE8noBVX7AUNcaBJGTwQ",
+      "sha256_hex": "2faf6629ed2c9398e43ea7bff4a4b60f1b1f13c9e80555fb01435c6812464f04"
+    },
+    {
+      "index": 4,
+      "name": "B5 payee not in the allow-list, allow-list in EIP-55 mixed case",
+      "tx": "0x37e2cac6dac5b5b6ae4729f19c070f8cc108e84fabe616ce243329015ace1bd4",
+      "payment": {
+        "network": "eip155:8453",
+        "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "payer": "0xe54bb381c683b9ae150f561778f0d7bdc1065876",
+        "to": "0x995ffef6c39234f0bbc95cf0e84fe1b6e6e2d8e0",
+        "amount": "5000",
+        "block_time": 1794119226
+      },
+      "code": "audience-mismatch",
+      "tier": 1,
+      "canonical": {
+        "reason": "audience-mismatch",
+        "tier": 1,
+        "evidence": {
+          "delta": [
+            {
+              "field": "allow.pay_to",
+              "authorized": [
+                "0xf8c639d3e47ab60ff96bcc144260f5d8bea344f6"
+              ],
+              "actual": "0x995ffef6c39234f0bbc95cf0e84fe1b6e6e2d8e0"
+            }
+          ]
+        },
+        "iat": 1794125000
+      },
+      "jcs": "{\"evidence\":{\"delta\":[{\"actual\":\"0x995ffef6c39234f0bbc95cf0e84fe1b6e6e2d8e0\",\"authorized\":[\"0xf8c639d3e47ab60ff96bcc144260f5d8bea344f6\"],\"field\":\"allow.pay_to\"}]},\"iat\":1794125000,\"reason\":\"audience-mismatch\",\"tier\":1}",
+      "sha256_b64url": "L69mKe0sk5jkPqe_9KS2DxsfE8noBVX7AUNcaBJGTwQ",
+      "sha256_hex": "2faf6629ed2c9398e43ea7bff4a4b60f1b1f13c9e80555fb01435c6812464f04",
+      "verbatim_from_mandate": {
+        "note": "authorized copied as the mandate spells it (EIP-55); a different hash for the same mismatch",
+        "canonical": {
+          "reason": "audience-mismatch",
+          "tier": 1,
+          "evidence": {
+            "delta": [
+              {
+                "field": "allow.pay_to",
+                "authorized": [
+                  "0xF8c639D3e47aB60FF96BCc144260F5d8BeA344f6"
+                ],
+                "actual": "0x995ffef6c39234f0bbc95cf0e84fe1b6e6e2d8e0"
+              }
+            ]
+          },
+          "iat": 1794125000
+        },
+        "jcs": "{\"evidence\":{\"delta\":[{\"actual\":\"0x995ffef6c39234f0bbc95cf0e84fe1b6e6e2d8e0\",\"authorized\":[\"0xF8c639D3e47aB60FF96BCc144260F5d8BeA344f6\"],\"field\":\"allow.pay_to\"}]},\"iat\":1794125000,\"reason\":\"audience-mismatch\",\"tier\":1}",
+        "sha256_b64url": "zuYXdHe96R0B2FQQD6d5sRaEySU2_F1-FJ1b1l2EcWk",
+        "sha256_hex": "cee6177477bde91d01d854100fa779b11684c92536fc5d7e149d5bd65d847169"
+      }
+    },
+    {
+      "index": 5,
+      "name": "B6 mandate expired before the payment",
+      "tx": "0xc029415e56711659e5e6feafc96399c6b126137132e3863f844e68968156fb45",
+      "payment": {
+        "network": "eip155:8453",
+        "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "payer": "0xe54bb381c683b9ae150f561778f0d7bdc1065876",
+        "to": "0xcb9b3f94387389e38ef2a7b3c0b851fb8325d7e9",
+        "amount": "10000",
+        "block_time": 1794115629
+      },
+      "code": "grant-expired",
+      "tier": 1,
+      "canonical": {
+        "reason": "grant-expired",
+        "tier": 1,
+        "evidence": {
+          "delta": [
+            {
+              "field": "expires_at",
+              "authorized": 1794100000,
+              "actual": 1794115629
+            }
+          ]
+        },
+        "iat": 1794120000
+      },
+      "jcs": "{\"evidence\":{\"delta\":[{\"actual\":1794115629,\"authorized\":1794100000,\"field\":\"expires_at\"}]},\"iat\":1794120000,\"reason\":\"grant-expired\",\"tier\":1}",
+      "sha256_b64url": "urZEe40KKPt-zXz_Dn-aUqoBoDE0gqoQV2Sb0afZ4Fc",
+      "sha256_hex": "bab6447b8d0a28fb7ecd7cff0e7f9a52aa01a0313482aa1057649bd1a7d9e057"
+    }
+  ],
+  "proposed_code_records": [
+    {
+      "index": 6,
+      "name": "B7 payment before the mandate's not_before",
+      "tx": "0xc029415e56711659e5e6feafc96399c6b126137132e3863f844e68968156fb45",
+      "payment": {
+        "network": "eip155:8453",
+        "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "payer": "0xe54bb381c683b9ae150f561778f0d7bdc1065876",
+        "to": "0xcb9b3f94387389e38ef2a7b3c0b851fb8325d7e9",
+        "amount": "10000",
+        "block_time": 1794115629
+      },
+      "code": "grant-not-yet-valid",
+      "tier": 1,
+      "canonical": {
+        "reason": "grant-not-yet-valid",
+        "tier": 1,
+        "evidence": {
+          "delta": [
+            {
+              "field": "not_before",
+              "authorized": 1794200000,
+              "actual": 1794115629
+            }
+          ]
+        },
+        "iat": 1794120000
+      },
+      "jcs": "{\"evidence\":{\"delta\":[{\"actual\":1794115629,\"authorized\":1794200000,\"field\":\"not_before\"}]},\"iat\":1794120000,\"reason\":\"grant-not-yet-valid\",\"tier\":1}",
+      "sha256_b64url": "mUQHVSoobr4jxZPZCDUkweGyGya3cyZJD8Jg2Tl-MKU",
+      "sha256_hex": "994407552a286ebe23c593d9083524c1e1b21b26b77326490fc260d9397e30a5"
+    },
+    {
+      "index": 7,
+      "name": "B8 mandate names Base Sepolia, payment settled on Base",
+      "tx": "0xbc7f261ab5b03d331934a27970466c2927f50c1831c880eb524aa2fe6ffa8928",
+      "payment": {
+        "network": "eip155:8453",
+        "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "payer": "0xe54bb381c683b9ae150f561778f0d7bdc1065876",
+        "to": "0xf8c639d3e47ab60ff96bcc144260f5d8bea344f6",
+        "amount": "2000",
+        "block_time": 1794044049
+      },
+      "code": "network-mismatch",
+      "tier": 1,
+      "canonical": {
+        "reason": "network-mismatch",
+        "tier": 1,
+        "evidence": {
+          "delta": [
+            {
+              "field": "network",
+              "authorized": "eip155:84532",
+              "actual": "eip155:8453"
+            }
+          ]
+        },
+        "iat": 1794050000
+      },
+      "jcs": "{\"evidence\":{\"delta\":[{\"actual\":\"eip155:8453\",\"authorized\":\"eip155:84532\",\"field\":\"network\"}]},\"iat\":1794050000,\"reason\":\"network-mismatch\",\"tier\":1}",
+      "sha256_b64url": "7PKhJgVWktQLmOEP9x5qy2DYuTV3MGDrGefgwFOHvLs",
+      "sha256_hex": "ecf2a126055692d40b98e10ff71e6acb60d8b935773060eb19e7e0c05387bcbb"
+    },
+    {
+      "index": 8,
+      "name": "B9 mandate names EURC, payment in USDC",
+      "tx": "0x37e2cac6dac5b5b6ae4729f19c070f8cc108e84fabe616ce243329015ace1bd4",
+      "payment": {
+        "network": "eip155:8453",
+        "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "payer": "0xe54bb381c683b9ae150f561778f0d7bdc1065876",
+        "to": "0x995ffef6c39234f0bbc95cf0e84fe1b6e6e2d8e0",
+        "amount": "5000",
+        "block_time": 1794119226
+      },
+      "code": "asset-mismatch",
+      "tier": 1,
+      "canonical": {
+        "reason": "asset-mismatch",
+        "tier": 1,
+        "evidence": {
+          "delta": [
+            {
+              "field": "asset",
+              "authorized": "0x60a3e35cc302bfa44cb288bc5a4f316fdb1adb42",
+              "actual": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+            }
+          ]
+        },
+        "iat": 1794125000
+      },
+      "jcs": "{\"evidence\":{\"delta\":[{\"actual\":\"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913\",\"authorized\":\"0x60a3e35cc302bfa44cb288bc5a4f316fdb1adb42\",\"field\":\"asset\"}]},\"iat\":1794125000,\"reason\":\"asset-mismatch\",\"tier\":1}",
+      "sha256_b64url": "StjjauLVIR7DeGxMzsDpN7oaZFP1eXpvwsQuCh8-pNY",
+      "sha256_hex": "4ad8e36ae2d5211ec3786c4ccec0e937ba1a6453f5797a6fc2c42e0a1f3ea4d6"
+    }
+  ],
+  "in_scope": [
+    {
+      "index": 0,
+      "name": "B1 in scope: payee allowed, amount under the cap",
+      "tx": "0xbc7f261ab5b03d331934a27970466c2927f50c1831c880eb524aa2fe6ffa8928",
+      "payment": {
+        "network": "eip155:8453",
+        "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "payer": "0xe54bb381c683b9ae150f561778f0d7bdc1065876",
+        "to": "0xf8c639d3e47ab60ff96bcc144260f5d8bea344f6",
+        "amount": "2000",
+        "block_time": 1794044049
+      }
+    },
+    {
+      "index": 1,
+      "name": "B2 in scope, mandate spells addresses in EIP-55 mixed case",
+      "tx": "0xbc7f261ab5b03d331934a27970466c2927f50c1831c880eb524aa2fe6ffa8928",
+      "payment": {
+        "network": "eip155:8453",
+        "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "payer": "0xe54bb381c683b9ae150f561778f0d7bdc1065876",
+        "to": "0xf8c639d3e47ab60ff96bcc144260f5d8bea344f6",
+        "amount": "2000",
+        "block_time": 1794044049
+      }
+    },
+    {
+      "index": 9,
+      "name": "B10 in scope: payee allowed (a second seller, settled by another CDP wallet)",
+      "tx": "0xc029415e56711659e5e6feafc96399c6b126137132e3863f844e68968156fb45",
+      "payment": {
+        "network": "eip155:8453",
+        "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "payer": "0xe54bb381c683b9ae150f561778f0d7bdc1065876",
+        "to": "0xcb9b3f94387389e38ef2a7b3c0b851fb8325d7e9",
+        "amount": "10000",
+        "block_time": 1794115629
+      }
+    }
+  ],
+  "pitfalls": [
+    {
+      "index": 0,
+      "name": "B1 in scope: payee allowed, amount under the cap",
+      "pitfall": "payee_read_from_tx_to",
+      "tx_to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "tx_from": "0x97acce27d5069544480bde0f04d9f47d7422a016",
+      "wrong_record": {
+        "reason": "audience-mismatch",
+        "tier": 1,
+        "evidence": {
+          "delta": [
+            {
+              "field": "allow.pay_to",
+              "authorized": [
+                "0xf8c639d3e47ab60ff96bcc144260f5d8bea344f6"
+              ],
+              "actual": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+            }
+          ]
+        },
+        "iat": 1794050000
+      },
+      "jcs": "{\"evidence\":{\"delta\":[{\"actual\":\"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913\",\"authorized\":[\"0xf8c639d3e47ab60ff96bcc144260f5d8bea344f6\"],\"field\":\"allow.pay_to\"}]},\"iat\":1794050000,\"reason\":\"audience-mismatch\",\"tier\":1}",
+      "sha256_b64url": "9Tu0lCb9e1G0bhNbfGeTa2knk-OOHs3YrcJaimBkXas",
+      "sha256_hex": "f53bb49426fd7b51b46e135b7c67936b692793e38e1ecdd8adc25a8a60645dab"
+    },
+    {
+      "index": 1,
+      "name": "B2 in scope, mandate spells addresses in EIP-55 mixed case",
+      "pitfall": "exact_string_address_compare",
+      "false_mismatches": [
+        "asset",
+        "allow.pay_to"
+      ]
+    },
+    {
+      "index": 1,
+      "name": "B2 in scope, mandate spells addresses in EIP-55 mixed case",
+      "pitfall": "payee_read_from_tx_to",
+      "tx_to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "tx_from": "0x97acce27d5069544480bde0f04d9f47d7422a016",
+      "wrong_record": {
+        "reason": "audience-mismatch",
+        "tier": 1,
+        "evidence": {
+          "delta": [
+            {
+              "field": "allow.pay_to",
+              "authorized": [
+                "0xf8c639d3e47ab60ff96bcc144260f5d8bea344f6"
+              ],
+              "actual": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+            }
+          ]
+        },
+        "iat": 1794050000
+      },
+      "jcs": "{\"evidence\":{\"delta\":[{\"actual\":\"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913\",\"authorized\":[\"0xf8c639d3e47ab60ff96bcc144260f5d8bea344f6\"],\"field\":\"allow.pay_to\"}]},\"iat\":1794050000,\"reason\":\"audience-mismatch\",\"tier\":1}",
+      "sha256_b64url": "9Tu0lCb9e1G0bhNbfGeTa2knk-OOHs3YrcJaimBkXas",
+      "sha256_hex": "f53bb49426fd7b51b46e135b7c67936b692793e38e1ecdd8adc25a8a60645dab"
+    },
+    {
+      "index": 9,
+      "name": "B10 in scope: payee allowed (a second seller, settled by another CDP wallet)",
+      "pitfall": "payee_read_from_tx_to",
+      "tx_to": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "tx_from": "0x8cda367232d78c067116e3260da881d2da8ffa39",
+      "wrong_record": {
+        "reason": "audience-mismatch",
+        "tier": 1,
+        "evidence": {
+          "delta": [
+            {
+              "field": "allow.pay_to",
+              "authorized": [
+                "0xcb9b3f94387389e38ef2a7b3c0b851fb8325d7e9"
+              ],
+              "actual": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+            }
+          ]
+        },
+        "iat": 1794120000
+      },
+      "jcs": "{\"evidence\":{\"delta\":[{\"actual\":\"0x833589fcd6edb6e08f4c7c32d4f71b54bda02913\",\"authorized\":[\"0xcb9b3f94387389e38ef2a7b3c0b851fb8325d7e9\"],\"field\":\"allow.pay_to\"}]},\"iat\":1794120000,\"reason\":\"audience-mismatch\",\"tier\":1}",
+      "sha256_b64url": "IZ1YmCWPTyRchqJgqDu_J-VyH3kouJE27YpmnSvqUcs",
+      "sha256_hex": "219d5898258f4f245c86a260a83bbf27e5721f7928b89136ed8a669d2bea51cb"
+    }
+  ],
+  "fixtures": [
+    {
+      "index": 0,
+      "name": "F1 B1 plus two unrelated transfers: 1 EURC unit from the payer, 1 USDC unit from the facilitator",
+      "tx": "0xbc7f261ab5b03d331934a27970466c2927f50c1831c880eb524aa2fe6ffa8928",
+      "added_logs": 2,
+      "verdict": "in_scope",
+      "payment": {
+        "network": "eip155:8453",
+        "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "payer": "0xe54bb381c683b9ae150f561778f0d7bdc1065876",
+        "to": "0xf8c639d3e47ab60ff96bcc144260f5d8bea344f6",
+        "amount": "2000",
+        "block_time": 1794044049
+      },
+      "same_event_as_recorded_receipt": true
+    },
+    {
+      "index": 1,
+      "name": "F2 B1 plus a second, identical USDC Transfer from the payer",
+      "tx": "0xbc7f261ab5b03d331934a27970466c2927f50c1831c880eb524aa2fe6ffa8928",
+      "added_logs": 1,
+      "verdict": "unchecked",
+      "cause": "payment_event",
+      "why": "payment event not determined: 2 Transfer logs of the token contract from the authorizer"
+    },
+    {
+      "index": 2,
+      "name": "F3 B1 with an allow-list entry one hex digit short (not an address)",
+      "tx": "0xbc7f261ab5b03d331934a27970466c2927f50c1831c880eb524aa2fe6ffa8928",
+      "added_logs": 0,
+      "verdict": "unchecked",
+      "cause": "invalid_value",
+      "why": "not a valid value for its predicate: allow.pay_to"
+    },
+    {
+      "index": 3,
+      "name": "F4 B1 with allow.resource_prefix, which the payment event does not carry",
+      "tx": "0xbc7f261ab5b03d331934a27970466c2927f50c1831c880eb524aa2fe6ffa8928",
+      "added_logs": 0,
+      "verdict": "unchecked",
+      "cause": "no_predicate",
+      "why": "no predicate for allow.resource_prefix"
+    }
+  ]
+}
