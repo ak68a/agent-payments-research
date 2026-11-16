@@ -101,7 +101,7 @@ All three serialisers gave byte-identical output and the same SHA-256 for 11 of 
 1. EVM addresses in a record: lowercase (used here) or EIP-55? And should Step 4c say that the comparison uses the same normal form? Should Step 4d evaluate the field's constraint, as `make.mjs` does, instead of `authorized ≠ actual`, and return `unchecked` when the predicate or the payment event cannot be determined?
 2. `currency`: the contract address (used here), or a CAIP-19 id such as `eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913`? CAIP-19 would also carry the network, which a bare contract address does not.
 3. `network` values: CAIP-2 (`eip155:8453`), as in the iussum mandate, or the x402 v1 names (`base`, `base-sepolia`) some catalogues still use? A record that mixes them hashes differently for the same mismatch.
-4. `grant-not-yet-valid`: violated when the block time is before `not_before` (used here, like JWT `nbf`). And `grant-expired` when the block time is at or after `expires_at` (like JWT `exp`). Is the boundary second meant to be inclusive the same way on both?
+4. `grant-not-yet-valid`: violated when the block time is before `not_before` (used here, like JWT `nbf`). And `grant-expired` when the block time is at or after `expires_at` (like JWT `exp`). Is the boundary second meant to be inclusive the same way on both? EIP-3009 differs at the lower bound: the USDC implementation behind the Base proxy (`FiatTokenV2_2`, `EIP3009.sol` L319-L323) accepts an authorization only when `validAfter < now < validBefore`, so with `not_before` equal to `validAfter` a payment at exactly that second is in scope here but would be rejected on chain, while `expires_at` and `validBefore` agree.
 
 ## Re-run
 
