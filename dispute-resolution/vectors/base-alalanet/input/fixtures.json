@@ -1,0 +1,122 @@
+[
+ {
+  "name": "F1 B1 plus two unrelated transfers: 1 EURC unit from the payer, 1 USDC unit from the facilitator",
+  "tx": "0xbc7f261ab5b03d331934a27970466c2927f50c1831c880eb524aa2fe6ffa8928",
+  "add_logs": [
+   {
+    "address": "0x60a3e35cc302bfa44cb288bc5a4f316fdb1adb42",
+    "topics": [
+     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+     "0x000000000000000000000000e54bb381c683b9ae150f561778f0d7bdc1065876",
+     "0x000000000000000000000000f8c639d3e47ab60ff96bcc144260f5d8bea344f6"
+    ],
+    "data": "0x0000000000000000000000000000000000000000000000000000000000000001",
+    "logIndex": "0x2"
+   },
+   {
+    "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "topics": [
+     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+     "0x00000000000000000000000097acce27d5069544480bde0f04d9f47d7422a016",
+     "0x000000000000000000000000f8c639d3e47ab60ff96bcc144260f5d8bea344f6"
+    ],
+    "data": "0x0000000000000000000000000000000000000000000000000000000000000001",
+    "logIndex": "0x3"
+   }
+  ],
+  "mandate": {
+   "v": "base-vectors/0.1",
+   "network": "eip155:8453",
+   "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+   "per_payment_max": "10000",
+   "allow": {
+    "pay_to": [
+     "0xf8c639d3e47ab60ff96bcc144260f5d8bea344f6"
+    ]
+   },
+   "not_before": 1794000000,
+   "expires_at": 1794600000
+  },
+  "expect": {
+   "verdict": "in_scope"
+  }
+ },
+ {
+  "name": "F2 B1 plus a second, identical USDC Transfer from the payer",
+  "tx": "0xbc7f261ab5b03d331934a27970466c2927f50c1831c880eb524aa2fe6ffa8928",
+  "add_logs": [
+   {
+    "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "topics": [
+     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+     "0x000000000000000000000000e54bb381c683b9ae150f561778f0d7bdc1065876",
+     "0x000000000000000000000000f8c639d3e47ab60ff96bcc144260f5d8bea344f6"
+    ],
+    "data": "0x00000000000000000000000000000000000000000000000000000000000007d0",
+    "logIndex": "0x2"
+   }
+  ],
+  "mandate": {
+   "v": "base-vectors/0.1",
+   "network": "eip155:8453",
+   "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+   "per_payment_max": "10000",
+   "allow": {
+    "pay_to": [
+     "0xf8c639d3e47ab60ff96bcc144260f5d8bea344f6"
+    ]
+   },
+   "not_before": 1794000000,
+   "expires_at": 1794600000
+  },
+  "expect": {
+   "verdict": "unchecked",
+   "cause": "payment_event"
+  }
+ },
+ {
+  "name": "F3 B1 with an allow-list entry one hex digit short (not an address)",
+  "tx": "0xbc7f261ab5b03d331934a27970466c2927f50c1831c880eb524aa2fe6ffa8928",
+  "mandate": {
+   "v": "base-vectors/0.1",
+   "network": "eip155:8453",
+   "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+   "per_payment_max": "10000",
+   "allow": {
+    "pay_to": [
+     "0xf8c639d3e47ab60ff96bcc144260f5d8bea344f"
+    ]
+   },
+   "not_before": 1794000000,
+   "expires_at": 1794600000
+  },
+  "expect": {
+   "verdict": "unchecked",
+   "cause": "invalid_value"
+  }
+ },
+ {
+  "name": "F4 B1 with allow.resource_prefix, which the payment event does not carry",
+  "tx": "0xbc7f261ab5b03d331934a27970466c2927f50c1831c880eb524aa2fe6ffa8928",
+  "mandate": {
+   "v": "base-vectors/0.1",
+   "network": "eip155:8453",
+   "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+   "per_payment_max": "10000",
+   "allow": {
+    "pay_to": [
+     "0xf8c639d3e47ab60ff96bcc144260f5d8bea344f6"
+    ],
+    "resource_prefix": [
+     "https://"
+    ]
+   },
+   "not_before": 1794000000,
+   "expires_at": 1794600000
+  },
+  "expect": {
+   "verdict": "unchecked",
+   "cause": "no_predicate"
+  }
+ }
+]

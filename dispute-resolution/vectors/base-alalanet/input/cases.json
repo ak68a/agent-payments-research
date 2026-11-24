@@ -1,0 +1,229 @@
+[
+ {
+  "name": "B1 in scope: payee allowed, amount under the cap",
+  "tx": "0xbc7f261ab5b03d331934a27970466c2927f50c1831c880eb524aa2fe6ffa8928",
+  "filed_at": 1794050000,
+  "mandate": {
+   "v": "base-vectors/0.1",
+   "network": "eip155:8453",
+   "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+   "per_payment_max": "10000",
+   "allow": {
+    "pay_to": [
+     "0xf8c639d3e47ab60ff96bcc144260f5d8bea344f6"
+    ]
+   },
+   "not_before": 1794000000,
+   "expires_at": 1794600000
+  },
+  "expect": {
+   "verdict": "in_scope"
+  }
+ },
+ {
+  "name": "B2 in scope, mandate spells addresses in EIP-55 mixed case",
+  "tx": "0xbc7f261ab5b03d331934a27970466c2927f50c1831c880eb524aa2fe6ffa8928",
+  "filed_at": 1794050000,
+  "mandate": {
+   "v": "base-vectors/0.1",
+   "network": "eip155:8453",
+   "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+   "per_payment_max": "10000",
+   "allow": {
+    "pay_to": [
+     "0xF8c639D3e47aB60FF96BCc144260F5d8BeA344f6"
+    ]
+   },
+   "not_before": 1794000000,
+   "expires_at": 1794600000
+  },
+  "expect": {
+   "verdict": "in_scope"
+  }
+ },
+ {
+  "name": "B3 amount over the per-payment cap",
+  "tx": "0xbc7f261ab5b03d331934a27970466c2927f50c1831c880eb524aa2fe6ffa8928",
+  "filed_at": 1794050000,
+  "mandate": {
+   "v": "base-vectors/0.1",
+   "network": "eip155:8453",
+   "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+   "per_payment_max": "1000",
+   "allow": {
+    "pay_to": [
+     "0xf8c639d3e47ab60ff96bcc144260f5d8bea344f6"
+    ]
+   },
+   "not_before": 1794000000,
+   "expires_at": 1794600000
+  },
+  "expect": {
+   "verdict": "mismatch",
+   "code": "scope-exceeded",
+   "field": "per_payment_max"
+  }
+ },
+ {
+  "name": "B4 payee not in the allow-list",
+  "tx": "0x37e2cac6dac5b5b6ae4729f19c070f8cc108e84fabe616ce243329015ace1bd4",
+  "filed_at": 1794125000,
+  "mandate": {
+   "v": "base-vectors/0.1",
+   "network": "eip155:8453",
+   "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+   "per_payment_max": "10000",
+   "allow": {
+    "pay_to": [
+     "0xf8c639d3e47ab60ff96bcc144260f5d8bea344f6"
+    ]
+   },
+   "not_before": 1794000000,
+   "expires_at": 1794600000
+  },
+  "expect": {
+   "verdict": "mismatch",
+   "code": "audience-mismatch",
+   "field": "allow.pay_to"
+  }
+ },
+ {
+  "name": "B5 payee not in the allow-list, allow-list in EIP-55 mixed case",
+  "tx": "0x37e2cac6dac5b5b6ae4729f19c070f8cc108e84fabe616ce243329015ace1bd4",
+  "filed_at": 1794125000,
+  "mandate": {
+   "v": "base-vectors/0.1",
+   "network": "eip155:8453",
+   "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+   "per_payment_max": "10000",
+   "allow": {
+    "pay_to": [
+     "0xF8c639D3e47aB60FF96BCc144260F5d8BeA344f6"
+    ]
+   },
+   "not_before": 1794000000,
+   "expires_at": 1794600000
+  },
+  "expect": {
+   "verdict": "mismatch",
+   "code": "audience-mismatch",
+   "field": "allow.pay_to"
+  }
+ },
+ {
+  "name": "B6 mandate expired before the payment",
+  "tx": "0xc029415e56711659e5e6feafc96399c6b126137132e3863f844e68968156fb45",
+  "filed_at": 1794120000,
+  "mandate": {
+   "v": "base-vectors/0.1",
+   "network": "eip155:8453",
+   "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+   "per_payment_max": "10000",
+   "allow": {
+    "pay_to": [
+     "0xcb9b3f94387389e38ef2a7b3c0b851fb8325d7e9"
+    ]
+   },
+   "not_before": 1794000000,
+   "expires_at": 1794100000
+  },
+  "expect": {
+   "verdict": "mismatch",
+   "code": "grant-expired",
+   "field": "expires_at"
+  }
+ },
+ {
+  "name": "B7 payment before the mandate's not_before",
+  "tx": "0xc029415e56711659e5e6feafc96399c6b126137132e3863f844e68968156fb45",
+  "filed_at": 1794120000,
+  "mandate": {
+   "v": "base-vectors/0.1",
+   "network": "eip155:8453",
+   "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+   "per_payment_max": "10000",
+   "allow": {
+    "pay_to": [
+     "0xcb9b3f94387389e38ef2a7b3c0b851fb8325d7e9"
+    ]
+   },
+   "not_before": 1794200000,
+   "expires_at": 1794800000
+  },
+  "expect": {
+   "verdict": "mismatch",
+   "code": "grant-not-yet-valid",
+   "proposed": true,
+   "field": "not_before"
+  }
+ },
+ {
+  "name": "B8 mandate names Base Sepolia, payment settled on Base",
+  "tx": "0xbc7f261ab5b03d331934a27970466c2927f50c1831c880eb524aa2fe6ffa8928",
+  "filed_at": 1794050000,
+  "mandate": {
+   "v": "base-vectors/0.1",
+   "network": "eip155:84532",
+   "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+   "per_payment_max": "10000",
+   "allow": {
+    "pay_to": [
+     "0xf8c639d3e47ab60ff96bcc144260f5d8bea344f6"
+    ]
+   },
+   "not_before": 1794000000,
+   "expires_at": 1794600000
+  },
+  "expect": {
+   "verdict": "mismatch",
+   "code": "network-mismatch",
+   "proposed": true,
+   "field": "network"
+  }
+ },
+ {
+  "name": "B9 mandate names EURC, payment in USDC",
+  "tx": "0x37e2cac6dac5b5b6ae4729f19c070f8cc108e84fabe616ce243329015ace1bd4",
+  "filed_at": 1794125000,
+  "mandate": {
+   "v": "base-vectors/0.1",
+   "network": "eip155:8453",
+   "asset": "0x60a3e35cc302bfa44cb288bc5a4f316fdb1adb42",
+   "per_payment_max": "10000",
+   "allow": {
+    "pay_to": [
+     "0x995ffef6c39234f0bbc95cf0e84fe1b6e6e2d8e0"
+    ]
+   },
+   "not_before": 1794000000,
+   "expires_at": 1794600000
+  },
+  "expect": {
+   "verdict": "mismatch",
+   "code": "asset-mismatch",
+   "proposed": true,
+   "field": "asset"
+  }
+ },
+ {
+  "name": "B10 in scope: payee allowed (a second seller, settled by another CDP wallet)",
+  "tx": "0xc029415e56711659e5e6feafc96399c6b126137132e3863f844e68968156fb45",
+  "filed_at": 1794120000,
+  "mandate": {
+   "v": "base-vectors/0.1",
+   "network": "eip155:8453",
+   "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+   "per_payment_max": "10000",
+   "allow": {
+    "pay_to": [
+     "0xcb9b3f94387389e38ef2a7b3c0b851fb8325d7e9"
+    ]
+   },
+   "not_before": 1794000000,
+   "expires_at": 1794600000
+  },
+  "expect": {
+   "verdict": "in_scope"
+  }
+ }
+]

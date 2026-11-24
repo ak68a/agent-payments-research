@@ -1,0 +1,10 @@
+{
+ "jsonrpc": "2.0",
+ "id": 1,
+ "result": {
+  "number": "0x34187dc",
+  "hash": "0x5eae4c8892b513e87f544b33c8e07e1b5581c166a7c4f4db7de0b4a7bba99b66",
+  "timestamp": "0x6af0082d",
+  "parentHash": "0x4fd3cf9732a85a7d4e4a010318fb9263313407255716a4612d2be2047346a045"
+ }
+}
