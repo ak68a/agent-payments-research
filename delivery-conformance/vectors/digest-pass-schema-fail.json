@@ -1,0 +1,31 @@
+{
+  "format": "delivery-conformance-vector/v1",
+  "id": "digest-pass-schema-fail",
+  "criteria": {
+    "content_type": "application/json",
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "required": [
+        "records"
+      ],
+      "properties": {
+        "records": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "delivered_body": "{\"records\":\"three\"}",
+  "body_encoding": "utf-8",
+  "expected_digest": "sha256:3ad03509f92dee7f6afcaa4a6d3e0045eb8a15468ef87d9ddc488df10650b015",
+  "expected_checks": {
+    "digest": "pass",
+    "schema": "fail"
+  },
+  "expected_findings": [
+    "schema_violation"
+  ]
+}
