@@ -317,6 +317,145 @@ regardless of the reason label. A future extension that adds
 machine-readable category or purchase-description fields to receipts
 could re-introduce a `category-mismatch` code.
 
+### 5.3 Attested tier
+
+Reason codes carry an implicit `tier`, an integer: `1` (mechanical)
+or `2` (attested). Values above 2 are reserved for aggregate
+disputes, specified separately.
+The four codes in the table above are `tier: 1` — every
+value in their delta entries is extracted from the embedded grant and
+receipt, so a resolver verifies them with no external trust decision
+(Section 6, Step 4). This section adds `tier: 2`: a reason
+code whose delta compares the receipt against a claim made by a named
+third party, rather than against the grant.
+
+Section 5.2's rule applies to the tier as well as the code: an
+unrecognized reason code MUST NOT cause a resolver to reject the
+evidence. A resolver that does not recognize tier `2`, or
+chooses not to trust the party named in `evidence.attestation`, MUST
+skip the attested claim (Section 6, Step 6) and complete Steps 1-5
+unchanged. The tier is strictly additive — it gives a resolver a class
+of evidence it MAY weigh, and takes away nothing a mechanical-only
+resolver already relied on.
+
+### 5.4 The attestation object
+
+An attested-tier code REQUIRES `evidence.attestation`. A
+mechanical-tier code MUST NOT carry it. `observation_window` and
+`as_of` MUST NOT appear on a tier 1 entry.
+
+| Field | Requiredness | Rule |
+|---|---|---|
+| `attestation.source` | REQUIRED | The attester's identity (an HTTPS URL or DID), in the same form as the dispute's `iss`. |
+| `attestation.type` | REQUIRED | A label identifying the attestation's evidentiary method. Extensible like `reason` (Section 5.2) — a resolver that does not recognize the value still evaluates the delta on its merits. |
+| `attestation.observation_window` | OPTIONAL | Object with `start` and `end` (NumericDate, RFC 7519 §2), if present. If present, MUST NOT be wider than the period the attester actually observed. |
+| `attestation.as_of` | OPTIONAL | NumericDate, if present. If both `as_of` and `observation_window` are present, `as_of` MUST NOT precede `observation_window.end`. |
+| `attestation.artifact` | REQUIRED | Object with `uri` and `hash` (Section 5.6). A reference to the attestation artifact itself. |
+
+`observation_window` and `as_of` are OPTIONAL. A claim like "this
+counterparty differs from what this endpoint had been settling to" is
+only strong evidence relative to a stated period — an attester with a
+day of history and one with a year both produce a syntactically valid
+attestation — but how wide a window is *enough* is a policy question,
+not a schema question. Requiring the field would force every resolver
+to also decide a minimum acceptable width to accept it, turning
+resolvers into policy evaluators rather than field extractors. This
+extension does not take that position: an attester MAY include
+`observation_window` and `as_of`; if `observation_window` is present,
+it MUST NOT be wider than the period the attester actually observed,
+so a resolver that does inspect it is not misled about the claim's
+basis. A resolver MAY apply its own minimum-window threshold before
+weighing an attestation; a resolver that does not apply one MUST
+still be able to evaluate the attestation at face value — the fields'
+presence is additional evidence for a resolver that wants it, not a
+gate on the attestation's validity.
+
+### 5.5 Attested reason codes
+
+| Code | When to use | Required delta fields |
+|---|---|---|
+| `counterparty-mismatch` | The attester observed, over `observation_window`, that this endpoint had been settling to a counterparty other than the one named in the receipt. | `field` referencing the receipt's counterparty, `authorized` = the counterparty the attestation names as the observed baseline, `actual` = the counterparty named by the receipt. |
+| `offer-drift` | The attester observed, over `observation_window`, that this resource's advertised offer (price, asset, or other payment-request term) differed from the offer embedded in the receipt at settlement time. | `field` referencing the drifted offer term, `authorized` = the term value the attestation names as the observed baseline, `actual` = the corresponding value from the receipt's embedded payment request. |
+
+Both codes are `tier: 2` and REQUIRE `evidence.attestation`
+(Section 5.4).
+
+`field` in a tier 2 delta entry is a dot-path into the
+receipt (or its embedded payment request), not the grant — the
+counterparty and offer terms these two codes evidence are not grant
+claims. `authorized` is the baseline value the attestation artifact
+asserts, and a resolver verifies it against `evidence.attestation`,
+not against `evidence.grant`. `actual` is the corresponding value
+from the receipt, verified as Step 4 already does. This changes how
+Step 4 applies to these two codes; see Step 6.
+
+### 5.6 Canonicalization
+
+`attestation.artifact.hash` is computed the way `grant_ref` and
+`receipt_ref` already are (Section 4.2): SHA-256, base64url-encoded
+without padding.
+The attestation artifact is not a JWT compact serialization, so it is
+first put into JSON Canonicalization Form (RFC 8785, JCS), and the
+digest is taken over that canonical byte string. `attestation.artifact.uri`
+locates the artifact; a resolver that dereferences it MUST canonicalize
+the result the same way before comparing it against `hash`.
+
+JCS canonicalizes numbers using ECMAScript's number-to-string
+conversion, which is IEEE 754 double-precision and loses precision on
+integers outside the safely representable range — exactly the
+failure mode `delta` entries already avoid by carrying amounts as
+strings (Section 4, `constraints.maxAmount`). Every amount in the
+canonical attestation set MUST be serialized as a string, not a JSON
+number, so that two independent implementations of the same
+attestation produce identical hashes. The same rule applies to any
+other value in the canonical set where two producers could disagree
+on serialization.
+
+#### Canonical field set
+
+- Required: `reason`, `tier`, `evidence.delta`, `iat`
+- Optional: `evidence.attestation`
+- Attestation, required if present: `source`, `type`, `artifact`
+  (`uri`, `hash`)
+- Attestation, optional: `observation_window`, `as_of`
+
+A required field that is absent makes the record invalid and it
+MUST be rejected. An optional field that is absent is omitted from
+the canonical form. `null` is a value and hashes differently from
+absent.
+
+```
+-- evidence.attestation (non-normative) --
+{
+  "source": "https://attester.example",
+  "type": "settlement-history",
+  "observation_window": {
+    "start": 1723852800,
+    "end": 1726531200
+  },
+  "as_of": 1726534800,
+  "artifact": {
+    "uri": "https://attester.example/attestations/9f2a...",
+    "hash": "3k7Qp1..."
+  }
+}
+```
+
+### 5.7 Relationship to Section 5.1
+
+Section 5.1 dropped `category-mismatch` and `revoked-grant` because
+each requires state external to the grant and receipt, and noted that
+a signed revocation receipt "could re-introduce [`revoked-grant`]
+with a verifiable evidence path." The attested tier is that path,
+generalized: any claim a resolver cannot verify mechanically from the
+grant and receipt alone can be expressed as an attestation — carrying
+its own source, observation window, and artifact reference — instead
+of being asserted bare. `category-mismatch` and `revoked-grant` remain
+out of the registry in this draft, not because they are unverifiable,
+but because no attestation `type` for either has been specified yet.
+Their omission is now a scoping choice, not a structural limit of the
+evidence model.
+
 ## 6. Verification checklist
 
 A resolver verifies dispute evidence in five steps. A failure at any
@@ -373,6 +512,34 @@ step MUST cause rejection.
    `iat` (that is the dispute).
 4. The dispute's `iat` MUST follow the receipt's `iat` (you cannot
    dispute a payment before it happens).
+
+### Step 6: Attested claims (tier 2 only)
+
+Applies only when `reason` names a `tier: 2` code (Section
+5.3). A resolver that does not recognize the code, or does not trust
+the party named by `evidence.attestation.source`, MUST skip this step
+entirely and complete Steps 1-5 as they stand — the mechanical
+evidence trail (grant, receipt, and their binding) is independently
+sufficient, and the tier adds nothing a resolver is required to act
+on.
+
+1. Verify `evidence.attestation` is present. Its absence on a
+   tier 2 code MUST cause rejection.
+2. If `attestation.observation_window` is present, verify `start`
+   does not follow `end`. If both `attestation.observation_window`
+   and `attestation.as_of` are present, verify `as_of` does not
+   precede `observation_window.end`. Neither field is required to be
+   present, and their absence MUST NOT cause rejection.
+3. If the resolver dereferences `attestation.artifact.uri`, verify the
+   canonical form of the result against `attestation.artifact.hash`
+   (Section 5.6). A resolver that does not dereference the artifact
+   MAY record the attested claim as unverified and proceed no further
+   with this step.
+4. For each delta entry belonging to a tier 2 code, verify
+   `authorized` against the baseline value the attestation artifact
+   asserts, in place of Step 4's grant extraction; verify `actual`
+   against the embedded receipt as Step 4 already does. Step 4's
+   `authorized` ≠ `actual` check applies unchanged.
 
 ## 7. Artifact type registration
 
